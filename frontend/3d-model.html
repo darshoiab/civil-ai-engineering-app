@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Villa 3D Model — Mycon Designers</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; font-family: system-ui, Arial, sans-serif; }
+  #app { width: 100vw; height: 100vh; display: block; }
+  #panel {
+    position: fixed; top: 12px; left: 12px; z-index: 10;
+    background: rgba(20,28,38,0.82); color: #eef; padding: 14px 16px;
+    border-radius: 10px; max-width: 270px; backdrop-filter: blur(4px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+  }
+  #panel h1 { font-size: 15px; margin-bottom: 2px; }
+  #panel .sub { font-size: 11px; opacity: 0.7; margin-bottom: 10px; }
+  #panel button {
+    display: block; width: 100%; margin: 6px 0; padding: 8px 10px;
+    background: #2d3e54; color: #eef; border: 1px solid #44587288;
+    border-radius: 6px; cursor: pointer; font-size: 13px; text-align: left;
+  }
+  #panel button:hover { background: #3a516e; }
+  #panel button.active { background: #c1654a; border-color: #e08a6f; }
+  #panel .hint { font-size: 11px; opacity: 0.6; margin-top: 10px; line-height: 1.4; }
+  #loading {
+    position: fixed; inset: 0; z-index: 20; display: flex; align-items: center;
+    justify-content: center; background: #0d1622; color: #9ab; font-size: 16px;
+  }
+</style>
+</head>
+<body>
+<div id="loading">Loading 3D model…</div>
+<div id="panel">
+  <h1>Residential Villa</h1>
+  <div class="sub">Mycon Designers &amp; Consultants · ~1000 sq ft plinth</div>
+  <button id="btnCutaway">Cutaway (show interior)</button>
+  <button id="btnRoof" class="active">Roof: ON</button>
+  <button id="btnRotate">Auto-rotate: OFF</button>
+  <button id="btnReset">Reset view</button>
+  <div class="hint">Drag to orbit · scroll to zoom · right-drag to pan. Model reconstructed from the ground-floor plan dimensions.</div>
+</div>
+<canvas id="app"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+// ---------------------------------------------------------------------------
+// Villa 3D model — procedurally built from data/house-plan.json dimensions.
+// Units = feet. Coordinate frame: X = east, Y = up, Z = north (front at z=0).
+// ---------------------------------------------------------------------------
+
+const W = 34;          // building footprint width  (33'-10")
+const D = 31;          // building footprint depth  (31'-5")
+const T = 0.75;        // wall thickness
+const FLOOR_H = 11;    // floor-to-floor height
+const WALL_H = FLOOR_H * 2;  // two storeys of solid shell
+const RIDGE = 9;       // roof rise above wall top
+
+// ---- Renderer / scene / camera --------------------------------------------
+const canvas = document.getElementById('app');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9fc3e0);
+scene.fog = new THREE.Fog(0x9fc3e0, 120, 320);
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.5, 1000);
+const HOME = new THREE.Vector3(W / 2 - 38, 34, -46);
+camera.position.copy(HOME);
+
+const controls = new THREE.OrbitControls(camera, canvas);
+controls.target.set(W / 2, 10, D / 2);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.maxPolarAngle = Math.PI / 2 - 0.02;
+controls.update();
+
+// ---- Lighting -------------------------------------------------------------
+scene.add(new THREE.HemisphereLight(0xbcd6f0, 0x55503f, 0.85));
+const sun = new THREE.DirectionalLight(0xfff2d8, 1.05);
+sun.position.set(-60, 90, -40);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 10;
+sun.shadow.camera.far = 260;
+const s = 90;
+Object.assign(sun.shadow.camera, { left: -s, right: s, top: s, bottom: -s });
+scene.add(sun);
+
+// ---- Materials ------------------------------------------------------------
+const mat = {
+  brick:   new THREE.MeshStandardMaterial({ color: 0xb5653f, roughness: 0.9 }),
+  cream:   new THREE.MeshStandardMaterial({ color: 0xefe3cd, roughness: 0.85, transparent: true, opacity: 1 }),
+  roof:    new THREE.MeshStandardMaterial({ color: 0x46505a, roughness: 0.7 }),
+  glass:   new THREE.MeshStandardMaterial({ color: 0x223b4d, roughness: 0.2, metalness: 0.3, emissive: 0x0a1622 }),
+  wood:    new THREE.MeshStandardMaterial({ color: 0xa8642f, roughness: 0.7 }),
+  white:   new THREE.MeshStandardMaterial({ color: 0xf3f1ea, roughness: 0.6 }),
+  stone:   new THREE.MeshStandardMaterial({ color: 0xc7bfb0, roughness: 0.9 }),
+  grass:   new THREE.MeshStandardMaterial({ color: 0x6f9b53, roughness: 1 }),
+  drive:   new THREE.MeshStandardMaterial({ color: 0x8d8a82, roughness: 1 }),
+  trunk:   new THREE.MeshStandardMaterial({ color: 0x5b4128, roughness: 1 }),
+  leaf:    new THREE.MeshStandardMaterial({ color: 0x3f7a3a, roughness: 1 })
+};
+// shell walls toggle opacity in cutaway mode
+mat.cream.opacity = 1;
+
+// ---- Helpers --------------------------------------------------------------
+function box(w, h, d, material, x, y, z, group) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
+  m.position.set(x, y, z);
+  m.castShadow = true; m.receiveShadow = true;
+  (group || scene).add(m);
+  return m;
+}
+
+// Window = wood frame + recessed glass, oriented to a facade.
+function addWindow(x, y, z, w, h, facing, group) {
+  const depth = 0.18;
+  let fw, fh, fd, gw, gh, gd;
+  if (facing === 'front' || facing === 'back') { fw = w; fh = h; fd = depth; gw = w - 0.6; gh = h - 0.6; gd = depth; }
+  else { fw = depth; fh = h; fd = w; gw = depth; gh = h - 0.6; gd = w - 0.6; }
+  box(fw, fh, fd, mat.wood, x, y, z, group);
+  const off = 0.06;
+  const gx = facing === 'left' ? x + off : facing === 'right' ? x - off : x;
+  const gz = facing === 'front' ? z + off : facing === 'back' ? z - off : z;
+  box(gw, gh, gd, mat.glass, gx, y, gz, group);
+}
+
+function tree(x, z) {
+  const g = new THREE.Group();
+  box(0.8, 6, 0.8, mat.trunk, 0, 3, 0, g);
+  const c = new THREE.Mesh(new THREE.ConeGeometry(4, 12, 8), mat.leaf);
+  c.position.y = 11; c.castShadow = true; g.add(c);
+  g.position.set(x, 0, z);
+  scene.add(g);
+}
+
+// ---- Groups (for toggles) -------------------------------------------------
+const gShell = new THREE.Group();      // exterior walls (two storeys)
+const gDetail = new THREE.Group();     // windows, balcony, columns, trim
+const gRoof = new THREE.Group();
+const gInterior = new THREE.Group();   // ground-floor partitions + labels
+gInterior.visible = false;
+scene.add(gShell, gDetail, gRoof, gInterior);
+
+// ---- Plinth & floor slabs -------------------------------------------------
+box(W + 3, 1.5, D + 3, mat.stone, W / 2, -0.75, D / 2);        // plinth base
+box(W, 0.5, D, mat.stone, W / 2, 0.25, D / 2, gShell);          // ground slab
+box(W, 0.5, D, mat.stone, W / 2, FLOOR_H, D / 2, gShell);       // first-floor slab
+
+// ---- Exterior shell (perimeter walls, two storeys) ------------------------
+box(W, WALL_H, T, mat.cream, W / 2, WALL_H / 2, 0, gShell);     // south / front
+box(W, WALL_H, T, mat.cream, W / 2, WALL_H / 2, D, gShell);     // north / back
+box(T, WALL_H, D, mat.brick, 0, WALL_H / 2, D / 2, gShell);     // west
+box(T, WALL_H, D, mat.brick, W, WALL_H / 2, D / 2, gShell);     // east
+// brick quoin pilasters at the front corners (villa character)
+box(2, WALL_H, 2, mat.brick, 1, WALL_H / 2, 1, gShell);
+box(2, WALL_H, 2, mat.brick, W - 1, WALL_H / 2, 1, gShell);
+
+// ---- Windows --------------------------------------------------------------
+// Front (south, z=0): ground floor + first floor rows
+[6, 28].forEach(x => addWindow(x, 5, 0, 4, 5.5, 'front', gDetail));
+[6, 28].forEach(x => addWindow(x, 16, 0, 4, 5.5, 'front', gDetail));
+// Double-height arched feature window over the entrance (right of centre)
+(function archWindow() {
+  const cx = 22, base = 2, h = 17, w = 4;
+  box(w, h, 0.25, mat.glass, cx, base + h / 2, 0.05, gDetail);
+  box(w + 0.7, h, 0.3, mat.wood, cx, base + h / 2, -0.02, gDetail); // frame behind
+  box(w, 0.25, 0.25, mat.wood, cx, base + h / 2, 0.18, gDetail);    // mullion bar
+  const arch = new THREE.Mesh(new THREE.CylinderGeometry(w / 2 + 0.35, w / 2 + 0.35, 0.3, 16, 1, false, 0, Math.PI), mat.cream);
+  arch.rotation.x = Math.PI / 2; arch.rotation.z = 0;
+  arch.position.set(cx, base + h, 0); arch.castShadow = true; gDetail.add(arch);
+})();
+// Back (north): three windows per floor
+[7, 17, 27].forEach(x => addWindow(x, 5, D, 3.5, 5, 'back', gDetail));
+[7, 17, 27].forEach(x => addWindow(x, 16, D, 3.5, 5, 'back', gDetail));
+// Sides
+[8, 22].forEach(z => addWindow(0, 5, z, 4, 5, 'left', gDetail));
+[8, 22].forEach(z => addWindow(0, 16, z, 4, 5, 'left', gDetail));
+[8, 22].forEach(z => addWindow(W, 5, z, 4, 5, 'right', gDetail));
+[8, 22].forEach(z => addWindow(W, 16, z, 4, 5, 'right', gDetail));
+
+// ---- Entrance: columns, door, balcony -------------------------------------
+box(3, 7, 0.4, mat.wood, 15, 3.5, 0.1, gDetail);               // door
+[12.5, 17.5].forEach(x => {                                    // two columns
+  const col = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.8, FLOOR_H, 12), mat.white);
+  col.position.set(x, FLOOR_H / 2, -2.5); col.castShadow = true; gDetail.add(col);
+});
+// First-floor balcony slab + balustrade
+box(9, 0.5, 4, mat.white, 15, FLOOR_H, -2, gDetail);
+for (let i = 0; i <= 8; i++) {
+  const bx = 11 + i;
+  const bal = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 2.4, 8), mat.white);
+  bal.position.set(bx, FLOOR_H + 1.4, -3.9); gDetail.add(bal);
+}
+box(9, 0.3, 0.3, mat.white, 15, FLOOR_H + 2.7, -3.9, gDetail); // top rail
+
+// ---- Roof: main gable + chimney + decorative front gable ------------------
+(function buildRoof() {
+  const theta = Math.atan(RIDGE / (D / 2));
+  const slopeLen = Math.hypot(D / 2, RIDGE) + 1.5;     // small eave overhang
+  const baseY = WALL_H, midY = baseY + RIDGE / 2;
+  // south slope (descends toward z=0)
+  const south = box(W + 3, 0.5, slopeLen, mat.roof, W / 2, midY, D / 4, gRoof);
+  south.rotation.x = -theta;
+  // north slope
+  const north = box(W + 3, 0.5, slopeLen, mat.roof, W / 2, midY, 3 * D / 4, gRoof);
+  north.rotation.x = theta;
+  // gable end triangles (east & west), in the Z-Y plane
+  const tri = new THREE.Shape();
+  tri.moveTo(0, 0); tri.lineTo(D, 0); tri.lineTo(D / 2, RIDGE); tri.lineTo(0, 0);
+  const triGeo = new THREE.ExtrudeGeometry(tri, { depth: 0.4, bevelEnabled: false });
+  [0.2, W - 0.6].forEach(x => {
+    const g = new THREE.Mesh(triGeo, mat.cream);
+    g.rotation.y = Math.PI / 2;
+    g.position.set(x, WALL_H, 0);
+    g.castShadow = true; gRoof.add(g);
+  });
+  // chimney
+  box(2.2, 6, 2.2, mat.brick, 9, WALL_H + 6, D / 2 + 3, gRoof);
+  box(2.6, 0.6, 2.6, mat.stone, 9, WALL_H + 9, D / 2 + 3, gRoof);
+  // decorative front cross-gable over the arched window
+  const fg = new THREE.Shape();
+  fg.moveTo(0, 0); fg.lineTo(10, 0); fg.lineTo(5, 6); fg.lineTo(0, 0);
+  const fgGeo = new THREE.ExtrudeGeometry(fg, { depth: 0.5, bevelEnabled: false });
+  const fgm = new THREE.Mesh(fgGeo, mat.cream);
+  fgm.position.set(17, WALL_H, -0.4); fgm.castShadow = true; gRoof.add(fgm);
+})();
+
+// ---- Ground-floor interior partitions + room labels (cutaway) -------------
+// Rooms positioned to approximate the plan layout (x = east, z = north).
+const rooms = [
+  { name: 'Guest Room', x0: 0,  z0: 0,  x1: 12, z1: 12 },
+  { name: 'Entrance',   x0: 13, z0: 0,  x1: 18, z1: 6  },
+  { name: 'Stairs',     x0: 13, z0: 6,  x1: 21, z1: 18 },
+  { name: 'Hammam',     x0: 0,  z0: 13, x1: 10, z1: 24 },
+  { name: 'Laundry',    x0: 0,  z0: 25, x1: 5,  z1: 31 },
+  { name: 'Store',      x0: 6,  z0: 25, x1: 12, z1: 31 },
+  { name: 'Kitchen',    x0: 12, z0: 19, x1: 22, z1: 31 },
+  { name: 'Bath',       x0: 22, z0: 11, x1: 27, z1: 19 },
+  { name: 'Bedroom',    x0: 22, z0: 19, x1: 34, z1: 31 }
+];
+const PT = 0.4, PH = FLOOR_H - 0.5;   // partition thickness / height
+rooms.forEach(r => {
+  const w = r.x1 - r.x0, d = r.z1 - r.z0, cx = (r.x0 + r.x1) / 2, cz = (r.z0 + r.z1) / 2;
+  box(w, PH, PT, mat.white, cx, PH / 2 + 0.5, r.z0, gInterior);
+  box(w, PH, PT, mat.white, cx, PH / 2 + 0.5, r.z1, gInterior);
+  box(PT, PH, d, mat.white, r.x0, PH / 2 + 0.5, cz, gInterior);
+  box(PT, PH, d, mat.white, r.x1, PH / 2 + 0.5, cz, gInterior);
+  gInterior.add(makeLabel(r.name, cx, FLOOR_H - 2, cz));
+});
+
+function makeLabel(text, x, y, z) {
+  const cv = document.createElement('canvas');
+  cv.width = 256; cv.height = 64;
+  const c = cv.getContext('2d');
+  c.fillStyle = 'rgba(20,30,45,0.85)'; c.fillRect(0, 0, 256, 64);
+  c.fillStyle = '#ffe'; c.font = 'bold 30px Arial'; c.textAlign = 'center';
+  c.fillText(text, 128, 42);
+  const tex = new THREE.CanvasTexture(cv);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false }));
+  sp.scale.set(7, 1.75, 1); sp.position.set(x, y, z);
+  return sp;
+}
+
+// ---- Site: plot, driveway, boundary, gates, trees -------------------------
+box(220, 0.4, 220, mat.grass, W / 2, -1.6, D / 2);                 // terrain
+box(34, 0.5, 50, mat.drive, W + 26, -1.3, D / 2 - 4);             // car park / driveway
+// low boundary wall around an approximate parcel
+const bw = mat.stone;
+box(70, 3, 1, bw, W / 2 + 8, 0, -22, scene);                      // front boundary (with gate gap)
+box(1, 3, 80, bw, W / 2 + 45, 0, D / 2 - 4, scene);              // right boundary
+box(1, 3, 80, bw, W / 2 - 28, 0, D / 2 - 4, scene);              // left boundary
+// gate posts (Main Gate 01 front-left, Main Gate 02 right)
+[[-12, -22], [-2, -22]].forEach(p => box(1.5, 5, 1.5, mat.brick, p[0], 0.5, p[1], scene));
+[[W / 2 + 45, 0], [W / 2 + 45, 14]].forEach(p => box(1.5, 5, 1.5, mat.brick, p[0], 0.5, p[1], scene));
+tree(-18, 6); tree(-20, 40); tree(W + 40, 50); tree(W + 8, -16); tree(-16, D + 10);
+
+// ---- UI toggles -----------------------------------------------------------
+let cutaway = false, autoRotate = false;
+const btnCut = document.getElementById('btnCutaway');
+const btnRoof = document.getElementById('btnRoof');
+const btnRot = document.getElementById('btnRotate');
+
+btnCut.onclick = () => {
+  cutaway = !cutaway;
+  gInterior.visible = cutaway;
+  gRoof.visible = !cutaway;
+  gDetail.visible = !cutaway;
+  mat.cream.opacity = cutaway ? 0.18 : 1;
+  mat.brick.transparent = cutaway; mat.brick.opacity = cutaway ? 0.18 : 1;
+  btnRoof.style.display = cutaway ? 'none' : 'block';
+  btnCut.classList.toggle('active', cutaway);
+  btnCut.textContent = cutaway ? 'Show full exterior' : 'Cutaway (show interior)';
+};
+btnRoof.onclick = () => {
+  gRoof.visible = !gRoof.visible;
+  btnRoof.textContent = 'Roof: ' + (gRoof.visible ? 'ON' : 'OFF');
+  btnRoof.classList.toggle('active', gRoof.visible);
+};
+btnRot.onclick = () => {
+  autoRotate = !autoRotate;
+  controls.autoRotate = autoRotate;
+  controls.autoRotateSpeed = 0.8;
+  btnRot.textContent = 'Auto-rotate: ' + (autoRotate ? 'ON' : 'OFF');
+  btnRot.classList.toggle('active', autoRotate);
+};
+document.getElementById('btnReset').onclick = () => {
+  camera.position.copy(HOME);
+  controls.target.set(W / 2, 10, D / 2);
+  controls.update();
+};
+
+// ---- Render loop ----------------------------------------------------------
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+document.getElementById('loading').style.display = 'none';
+(function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+})();
+</script>
+</body>
+</html>
