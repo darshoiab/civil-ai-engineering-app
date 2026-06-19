@@ -49,6 +49,22 @@
     { "name": "Stairs", "width_ft": 8, "length_ft": 12.5, "area_sqft": 100, "dim_text": "8'x12'6\"" },
     { "name": "Entrance", "width_ft": 4.5, "length_ft": 6, "area_sqft": 27, "dim_text": "4'6\"x6'" }
   ],
+  "ground_floor_layout": {
+    "note": "Interpreted spatial layout used to drive the 3D model. Origin at the south-west corner; x = east, z = north; feet. Positions are an approximation of the plan, not survey-accurate.",
+    "building_width_ft": 34,
+    "building_depth_ft": 31,
+    "rooms": [
+      { "name": "Guest Room", "x0": 0,  "z0": 0,  "x1": 12, "z1": 12 },
+      { "name": "Entrance",   "x0": 13, "z0": 0,  "x1": 18, "z1": 6  },
+      { "name": "Stairs",     "x0": 13, "z0": 6,  "x1": 21, "z1": 18 },
+      { "name": "Hammam",     "x0": 0,  "z0": 13, "x1": 10, "z1": 24 },
+      { "name": "Laundry",    "x0": 0,  "z0": 25, "x1": 5,  "z1": 31 },
+      { "name": "Store",      "x0": 6,  "z0": 25, "x1": 12, "z1": 31 },
+      { "name": "Kitchen",    "x0": 12, "z0": 19, "x1": 22, "z1": 31 },
+      { "name": "Bath",       "x0": 22, "z0": 11, "x1": 27, "z1": 19 },
+      { "name": "Bedroom",    "x0": 22, "z0": 19, "x1": 34, "z1": 31 }
+    ]
+  },
   "summary": {
     "room_count": 9,
     "total_room_area_sqft": 709.35,

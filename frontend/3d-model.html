@@ -45,14 +45,18 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="../data/plan-data.js"></script>
 <script>
 // ---------------------------------------------------------------------------
 // Villa 3D model — procedurally built from data/house-plan.json dimensions.
 // Units = feet. Coordinate frame: X = east, Y = up, Z = north (front at z=0).
+// Geometry is driven by window.PLAN_DATA (data/plan-data.js); falls back to
+// the dimensioned defaults if the dataset is unavailable.
 // ---------------------------------------------------------------------------
 
-const W = 34;          // building footprint width  (33'-10")
-const D = 31;          // building footprint depth  (31'-5")
+const PLAN = (window.PLAN_DATA && window.PLAN_DATA.ground_floor_layout) || {};
+const W = PLAN.building_width_ft || 34;   // building footprint width  (33'-10")
+const D = PLAN.building_depth_ft || 31;   // building footprint depth  (31'-5")
 const T = 0.75;        // wall thickness
 const FLOOR_H = 11;    // floor-to-floor height
 const WALL_H = FLOOR_H * 2;  // two storeys of solid shell
@@ -235,8 +239,9 @@ box(9, 0.3, 0.3, mat.white, 15, FLOOR_H + 2.7, -3.9, gDetail); // top rail
 })();
 
 // ---- Ground-floor interior partitions + room labels (cutaway) -------------
-// Rooms positioned to approximate the plan layout (x = east, z = north).
-const rooms = [
+// Room rectangles come from the dataset (data/plan-data.js); fall back to a
+// built-in layout if PLAN_DATA is unavailable.
+const rooms = (PLAN.rooms && PLAN.rooms.length) ? PLAN.rooms : [
   { name: 'Guest Room', x0: 0,  z0: 0,  x1: 12, z1: 12 },
   { name: 'Entrance',   x0: 13, z0: 0,  x1: 18, z1: 6  },
   { name: 'Stairs',     x0: 13, z0: 6,  x1: 21, z1: 18 },

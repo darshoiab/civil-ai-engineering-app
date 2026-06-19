@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Civil Engineering AI App</title>
+<style>
+  body { margin:0; font-family: system-ui, Arial, sans-serif; color:#1f2a37; background:#f5f6f8; }
+  header { background:#1f2a37; color:#fff; padding:26px 22px; }
+  header h1 { margin:0; font-size:22px; }
+  header p { margin:6px 0 0; opacity:.75; font-size:13px; }
+  main { max-width:880px; margin:24px auto; padding:0 20px; display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); }
+  a.card { display:block; text-decoration:none; color:inherit; background:#fff; border:1px solid #dfe3ea;
+           border-radius:12px; padding:20px; transition:.15s; }
+  a.card:hover { border-color:#c1654a; transform:translateY(-2px); box-shadow:0 8px 22px rgba(0,0,0,.07); }
+  a.card h2 { margin:0 0 8px; font-size:16px; }
+  a.card p { margin:0; font-size:13px; color:#5a6472; line-height:1.45; }
+  .tag { display:inline-block; margin-top:12px; font-size:11px; background:#f0e2da; color:#c1654a;
+         padding:3px 8px; border-radius:20px; }
+  footer { max-width:880px; margin:10px auto 30px; padding:0 20px; font-size:12px; color:#7a8492; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Civil Engineering AI App</h1>
+  <p>JKSSR estimation · BOQ generation · quantity takeoff · 3D visualization</p>
+</header>
+<main>
+  <a class="card" href="3d-model.html">
+    <h2>🏠 3D Model</h2>
+    <p>Interactive 3D reconstruction of the villa, built from the digitized
+       ground-floor plan. Orbit, zoom, cutaway view and roof toggle.</p>
+    <span class="tag">data-driven</span>
+  </a>
+  <a class="card" href="estimator.html">
+    <h2>📐 Estimation Calculator</h2>
+    <p>Quantity takeoff and priced Bill of Quantities from the plan and the
+       SSR rate schedule. Adjustable parameters, JSON export.</p>
+    <span class="tag">JKSSR · BOQ</span>
+  </a>
+</main>
+<footer>
+  Project data: <code>data/house-plan.json</code> · <code>data/ssr-rates.json</code>.
+  Source drawings by Mycon Designers &amp; Consultants.
+</footer>
+</body>
+</html>

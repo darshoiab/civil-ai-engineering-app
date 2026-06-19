@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Estimation Calculator — Civil AI App</title>
+<style>
+  :root { --ink:#1f2a37; --line:#dfe3ea; --brand:#c1654a; --bg:#f5f6f8; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, Arial, sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:#1f2a37; color:#fff; padding:16px 22px; }
+  header h1 { margin:0; font-size:18px; }
+  header p { margin:4px 0 0; font-size:12px; opacity:.75; }
+  header a { color:#ffd; font-size:12px; }
+  main { max-width:980px; margin:0 auto; padding:20px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:18px; margin-bottom:18px; }
+  .card h2 { margin:0 0 12px; font-size:15px; }
+  .params { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+  .params label { display:block; font-size:12px; color:#5a6472; margin-bottom:4px; }
+  .params input { width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font-size:14px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:right; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align:left; }
+  thead th { background:#f0f2f5; font-size:11px; text-transform:uppercase; letter-spacing:.03em; color:#5a6472; }
+  tfoot td { font-weight:700; font-size:15px; border-top:2px solid var(--ink); }
+  .qty-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; }
+  .qty { background:#f7f8fa; border:1px solid var(--line); border-radius:8px; padding:10px; }
+  .qty b { display:block; font-size:18px; }
+  .qty span { font-size:11px; color:#5a6472; }
+  .btn { background:var(--brand); color:#fff; border:none; padding:9px 16px; border-radius:6px; cursor:pointer; font-size:13px; margin-right:8px; }
+  .btn.ghost { background:#fff; color:var(--ink); border:1px solid var(--line); }
+  pre { background:#0e1622; color:#cfe; padding:14px; border-radius:8px; overflow:auto; font-size:12px; max-height:340px; }
+  .warn { background:#fff7e6; border:1px solid #f0d48a; color:#7a5b00; font-size:12px; padding:8px 12px; border-radius:6px; margin-bottom:14px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Estimation Calculator</h1>
+  <p>JKSSR-based BOQ from the digitized house plan · <a href="index.html">Home</a> · <a href="3d-model.html">3D model</a></p>
+</header>
+<main>
+  <div class="warn" id="warn">Rates are <b>placeholder samples</b> — replace values in <code>data/ssr-rates.json</code> with the applicable Schedule of Rates before relying on totals.</div>
+
+  <div class="card">
+    <h2>Takeoff parameters</h2>
+    <div class="params" id="params"></div>
+    <div style="margin-top:14px;">
+      <button class="btn" id="calc">Recalculate</button>
+      <button class="btn ghost" id="download">Download BOQ (JSON)</button>
+      <button class="btn ghost" id="toggleJson">Show / hide JSON</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Estimated quantities (metric)</h2>
+    <div class="qty-grid" id="quantities"></div>
+  </div>
+
+  <div class="card">
+    <h2>Bill of Quantities</h2>
+    <table>
+      <thead><tr><th>Code</th><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Amount</th></tr></thead>
+      <tbody id="boqBody"></tbody>
+      <tfoot><tr><td colspan="5">Grand total</td><td id="grandTotal"></td></tr></tfoot>
+    </table>
+  </div>
+
+  <div class="card" id="jsonCard" style="display:none;">
+    <h2>BOQ as JSON</h2>
+    <pre id="jsonOut"></pre>
+  </div>
+</main>
+
+<!-- data mirrors + logic (no build step, works from file://) -->
+<script src="../data/plan-data.js"></script>
+<script src="../data/ssr-rates.js"></script>
+<script src="../backend/estimate.js"></script>
+<script>
+  const plan = window.PLAN_DATA, rates = window.SSR_RATES;
+
+  // Editable parameters shown in the UI (key, label, value).
+  const fields = [
+    { key: 'numFloors',     label: 'Number of floors',        value: 2 },
+    { key: 'floorHeightFt', label: 'Floor height (ft)',       value: 10 },
+    { key: 'extWallThk',    label: 'Ext. wall thk (m)',       value: 0.23 },
+    { key: 'intWallThk',    label: 'Int. wall thk (m)',       value: 0.115 },
+    { key: 'slabThk',       label: 'Slab thickness (m)',      value: 0.125 },
+    { key: 'steelPerCum',   label: 'Steel (kg/cum RCC)',      value: 90 }
+  ];
+
+  const paramsEl = document.getElementById('params');
+  fields.forEach(f => {
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `<label>${f.label}</label><input type="number" step="any" id="p_${f.key}" value="${f.value}">`;
+    paramsEl.appendChild(wrap);
+  });
+
+  function readParams() {
+    const p = {};
+    fields.forEach(f => { p[f.key] = parseFloat(document.getElementById('p_' + f.key).value); });
+    return p;
+  }
+
+  const QLABELS = {
+    built_up_area_sqm: 'Built-up area (sqm)',
+    brick_volume: 'Brickwork (cum)',
+    rcc_volume: 'RCC concrete (cum)',
+    steel_weight: 'Steel (kg)',
+    plaster_area: 'Plaster (sqm)',
+    floor_area: 'Flooring (sqm)',
+    roof_area: 'Roofing (sqm)',
+    door_window_area: 'Doors & windows (sqm)'
+  };
+
+  let lastBOQ = null;
+
+  function fmt(n) { return Number(n).toLocaleString('en-IN'); }
+
+  function render() {
+    const out = Estimate.estimate(plan, rates, readParams());
+    lastBOQ = out.boq;
+
+    const q = out.quantities;
+    document.getElementById('quantities').innerHTML = Object.keys(QLABELS)
+      .map(k => `<div class="qty"><b>${fmt(q[k])}</b><span>${QLABELS[k]}</span></div>`).join('');
+
+    document.getElementById('boqBody').innerHTML = out.boq.line_items.map(l =>
+      `<tr><td>${l.code}</td><td>${l.description}</td><td>${fmt(l.quantity)}</td>` +
+      `<td>${l.unit}</td><td>${fmt(l.rate)}</td><td>${fmt(l.amount)}</td></tr>`).join('');
+
+    document.getElementById('grandTotal').textContent = out.boq.currency + ' ' + fmt(out.boq.grand_total);
+    document.getElementById('jsonOut').textContent = JSON.stringify(out.boq, null, 2);
+  }
+
+  document.getElementById('calc').onclick = render;
+  document.getElementById('toggleJson').onclick = () => {
+    const c = document.getElementById('jsonCard');
+    c.style.display = c.style.display === 'none' ? 'block' : 'none';
+  };
+  document.getElementById('download').onclick = () => {
+    if (!lastBOQ) return;
+    const blob = new Blob([JSON.stringify(lastBOQ, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'boq.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  render();
+</script>
+</body>
+</html>
