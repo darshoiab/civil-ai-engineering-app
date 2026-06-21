@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kashmiri House Plans in Revit — Complete Tutorial</title>
+<style>
+  /* ── GLOBAL ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Georgia', serif;
+    font-size: 11pt;
+    color: #1a1a1a;
+    background: #f0f0f0;
+    line-height: 1.75;
+  }
+
+  /* ── PAGE SHELL ── */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 12mm auto;
+    background: #fff;
+    padding: 20mm 22mm 20mm 25mm;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    page-break-after: always;
+    position: relative;
+  }
+
+  /* ── COVER PAGE ── */
+  .cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(160deg, #1b3a2d 0%, #2e6b4f 55%, #4a9e72 100%);
+    color: #fff;
+    padding: 30mm 20mm;
+  }
+  .cover .brand {
+    font-size: 9pt;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 8mm;
+    border-top: 1px solid rgba(255,255,255,0.4);
+    border-bottom: 1px solid rgba(255,255,255,0.4);
+    padding: 3mm 10mm;
+  }
+  .cover h1 {
+    font-size: 28pt;
+    font-weight: bold;
+    line-height: 1.25;
+    margin-bottom: 6mm;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .cover h2 {
+    font-size: 14pt;
+    font-weight: normal;
+    opacity: 0.88;
+    margin-bottom: 14mm;
+    font-style: italic;
+  }
+  .cover .divider {
+    width: 60mm;
+    height: 2px;
+    background: rgba(255,255,255,0.5);
+    margin: 8mm auto;
+  }
+  .cover .meta {
+    font-size: 9.5pt;
+    opacity: 0.8;
+    line-height: 2;
+  }
+  .cover .badge {
+    margin-top: 14mm;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 6px;
+    padding: 5mm 12mm;
+    font-size: 9pt;
+    letter-spacing: 1px;
+  }
+  .cover .arch-art {
+    font-size: 48pt;
+    margin-bottom: 8mm;
+    opacity: 0.9;
+  }
+
+  /* ── HEADER / FOOTER (non-cover) ── */
+  .page-header {
+    border-bottom: 2px solid #2e6b4f;
+    padding-bottom: 3mm;
+    margin-bottom: 8mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 8pt;
+    color: #555;
+    letter-spacing: 0.5px;
+  }
+  .page-header .channel { color: #2e6b4f; font-weight: bold; font-size: 8.5pt; }
+  .page-footer {
+    position: absolute;
+    bottom: 10mm;
+    left: 25mm;
+    right: 22mm;
+    border-top: 1px solid #ddd;
+    padding-top: 2mm;
+    display: flex;
+    justify-content: space-between;
+    font-size: 7.5pt;
+    color: #888;
+  }
+
+  /* ── TOC ── */
+  .toc-title {
+    font-size: 20pt;
+    color: #1b3a2d;
+    border-bottom: 3px solid #2e6b4f;
+    padding-bottom: 4mm;
+    margin-bottom: 8mm;
+    letter-spacing: 1px;
+  }
+  .toc-section { margin-bottom: 5mm; }
+  .toc-section h4 { font-size: 9pt; color: #2e6b4f; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2mm; }
+  .toc-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 1.5mm 0;
+    border-bottom: 1px dotted #ccc;
+    font-size: 10.5pt;
+  }
+  .toc-item .dots { flex: 1; border-bottom: 1px dotted #bbb; margin: 0 4mm; }
+  .toc-item .pg { color: #2e6b4f; font-weight: bold; min-width: 8mm; text-align: right; }
+  .toc-sub {
+    display: flex;
+    justify-content: space-between;
+    padding: 1mm 0 1mm 8mm;
+    font-size: 9.5pt;
+    color: #444;
+    border-bottom: 1px dotted #e5e5e5;
+  }
+  .toc-sub .dots { flex: 1; border-bottom: 1px dotted #ddd; margin: 0 4mm; }
+  .toc-sub .pg { color: #666; min-width: 8mm; text-align: right; }
+
+  /* ── CHAPTER HEADER ── */
+  .chapter-tag {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #2e6b4f;
+    margin-bottom: 2mm;
+  }
+  .chapter-title {
+    font-size: 22pt;
+    color: #1b3a2d;
+    line-height: 1.2;
+    margin-bottom: 2mm;
+  }
+  .chapter-subtitle {
+    font-size: 11pt;
+    color: #555;
+    font-style: italic;
+    margin-bottom: 6mm;
+    padding-bottom: 4mm;
+    border-bottom: 2px solid #2e6b4f;
+  }
+
+  /* ── CONTENT BLOCKS ── */
+  h3 { font-size: 13pt; color: #1b3a2d; margin: 7mm 0 3mm; border-left: 4px solid #2e6b4f; padding-left: 4mm; }
+  h4 { font-size: 11pt; color: #2e6b4f; margin: 5mm 0 2mm; }
+  p { margin-bottom: 4mm; text-align: justify; }
+
+  /* ── STEPS ── */
+  .steps { counter-reset: step; margin: 4mm 0 6mm; }
+  .step {
+    display: flex;
+    gap: 4mm;
+    margin-bottom: 4mm;
+    align-items: flex-start;
+  }
+  .step-num {
+    counter-increment: step;
+    min-width: 7mm;
+    height: 7mm;
+    background: #2e6b4f;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8pt;
+    font-weight: bold;
+    flex-shrink: 0;
+    margin-top: 1mm;
+  }
+  .step-content { flex: 1; }
+  .step-content strong { color: #1b3a2d; display: block; margin-bottom: 1mm; }
+
+  /* ── INFO BOXES ── */
+  .info-box {
+    background: #f0f8f4;
+    border-left: 5px solid #2e6b4f;
+    padding: 4mm 5mm;
+    margin: 5mm 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 10pt;
+  }
+  .info-box .label { font-weight: bold; color: #1b3a2d; display: block; margin-bottom: 1mm; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; }
+  .warn-box {
+    background: #fffbf0;
+    border-left: 5px solid #d4a017;
+    padding: 4mm 5mm;
+    margin: 5mm 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 10pt;
+  }
+  .warn-box .label { font-weight: bold; color: #8a6000; display: block; margin-bottom: 1mm; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; }
+  .tip-box {
+    background: #f5f0ff;
+    border-left: 5px solid #6b4fa0;
+    padding: 4mm 5mm;
+    margin: 5mm 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 10pt;
+  }
+  .tip-box .label { font-weight: bold; color: #3d2060; display: block; margin-bottom: 1mm; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ── TABLES ── */
+  table { width: 100%; border-collapse: collapse; margin: 5mm 0; font-size: 9.5pt; }
+  thead tr { background: #1b3a2d; color: #fff; }
+  thead th { padding: 3mm 4mm; text-align: left; font-weight: bold; font-size: 8.5pt; letter-spacing: 0.5px; }
+  tbody tr:nth-child(even) { background: #f5faf7; }
+  tbody td { padding: 2.5mm 4mm; border-bottom: 1px solid #ddd; vertical-align: top; }
+  table caption { font-style: italic; font-size: 9pt; color: #555; margin-bottom: 2mm; text-align: left; caption-side: top; }
+
+  /* ── DIAGRAM / FIGURE BOX ── */
+  .figure-box {
+    border: 1.5px solid #c8e0d0;
+    border-radius: 6px;
+    margin: 5mm 0;
+    overflow: hidden;
+  }
+  .figure-box .fig-title {
+    background: #2e6b4f;
+    color: #fff;
+    padding: 2.5mm 5mm;
+    font-size: 9pt;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  .figure-box .fig-body {
+    padding: 5mm;
+    background: #fafffe;
+    font-size: 9pt;
+  }
+  .figure-box .fig-caption { font-size: 8.5pt; color: #555; font-style: italic; margin-top: 3mm; }
+
+  /* ── ASCII DIAGRAM ── */
+  .diagram {
+    font-family: 'Courier New', monospace;
+    font-size: 8pt;
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    padding: 4mm;
+    border-radius: 4px;
+    line-height: 1.5;
+    color: #1a1a1a;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: #1e2832;
+    color: #a8d8a8;
+    font-family: 'Courier New', monospace;
+    font-size: 8.5pt;
+    padding: 4mm 5mm;
+    border-radius: 6px;
+    margin: 4mm 0;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+  .code-block .comment { color: #6a8f6a; }
+  .code-block .keyword { color: #82b4e8; }
+  .code-block .value { color: #f0c674; }
+
+  /* ── GRID 2-COL ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin: 4mm 0; }
+  .col-card {
+    border: 1px solid #c8e0d0;
+    border-radius: 6px;
+    padding: 4mm;
+    background: #fafffe;
+  }
+  .col-card h4 { color: #1b3a2d; margin-top: 0; border: none; padding: 0; margin-bottom: 2mm; }
+
+  /* ── SPEC LIST ── */
+  .spec-list { list-style: none; margin: 3mm 0; }
+  .spec-list li { display: flex; gap: 3mm; margin-bottom: 2mm; font-size: 10pt; }
+  .spec-list li::before { content: "▸"; color: #2e6b4f; font-size: 9pt; flex-shrink: 0; margin-top: 1mm; }
+
+  /* ── GLOSSARY ── */
+  .glossary-term { font-weight: bold; color: #1b3a2d; }
+  .glossary-def { margin-left: 5mm; margin-bottom: 3mm; font-size: 10pt; color: #333; }
+
+  /* ── PRINT MEDIA ── */
+  @media print {
+    body { background: #fff; font-size: 10.5pt; }
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0;
+      padding: 18mm 20mm 18mm 22mm;
+      box-shadow: none;
+      page-break-after: always;
+    }
+    .cover { page-break-after: always; }
+    .no-break { page-break-inside: avoid; }
+    @page { size: A4; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════ COVER ══ -->
+<div class="page cover">
+  <div class="arch-art">🏔️🏠</div>
+  <div class="brand">Kashmir House Plans · YouTube Tutorial Series</div>
+  <h1>Designing a Kashmiri House<br>in Autodesk Revit</h1>
+  <h2>A Complete Step-by-Step Tutorial</h2>
+  <div class="divider"></div>
+  <div class="meta">
+    Based on the Kashmir House Plans YouTube Channel<br>
+    youtube.com/c/kashmirhouseplans<br><br>
+    Software: Autodesk Revit · Lumion<br>
+    Project: 30 × 30 ft Kashmiri Residential House<br><br>
+    Published: June 2026
+  </div>
+  <div class="badge">
+    CHAPTERS 1 – 15 · FULL WORKFLOW · BEGINNER TO ADVANCED
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ TABLE OF CONTENTS ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Table of Contents</span>
+  </div>
+
+  <div class="toc-title">Table of Contents</div>
+
+  <div class="toc-section">
+    <h4>Foundations</h4>
+    <div class="toc-item"><span>Chapter 1 · Introduction to Kashmiri Architecture</span><span class="dots"></span><span class="pg">3</span></div>
+    <div class="toc-sub"><span>1.1 Taq Construction System</span><span class="dots"></span><span class="pg">3</span></div>
+    <div class="toc-sub"><span>1.2 Dhajji Dewari System</span><span class="dots"></span><span class="pg">3</span></div>
+    <div class="toc-sub"><span>1.3 Key Architectural Features</span><span class="dots"></span><span class="pg">3</span></div>
+    <div class="toc-item"><span>Chapter 2 · Revit Setup & Interface</span><span class="dots"></span><span class="pg">4</span></div>
+    <div class="toc-sub"><span>2.1 System Requirements</span><span class="dots"></span><span class="pg">4</span></div>
+    <div class="toc-sub"><span>2.2 New Project — Architectural Template</span><span class="dots"></span><span class="pg">4</span></div>
+    <div class="toc-sub"><span>2.3 Interface Overview</span><span class="dots"></span><span class="pg">4</span></div>
+  </div>
+
+  <div class="toc-section">
+    <h4>Building the Structure</h4>
+    <div class="toc-item"><span>Chapter 3 · Levels & Grids</span><span class="dots"></span><span class="pg">5</span></div>
+    <div class="toc-item"><span>Chapter 4 · Drawing Kashmiri Walls</span><span class="dots"></span><span class="pg">6</span></div>
+    <div class="toc-sub"><span>4.1 Exterior Walls (300 mm Stone/Brick)</span><span class="dots"></span><span class="pg">6</span></div>
+    <div class="toc-sub"><span>4.2 Interior Partition Walls</span><span class="dots"></span><span class="pg">6</span></div>
+    <div class="toc-sub"><span>4.3 Taq & Dhajji Wall Types in Revit</span><span class="dots"></span><span class="pg">6</span></div>
+    <div class="toc-item"><span>Chapter 5 · Floors & Slabs</span><span class="dots"></span><span class="pg">7</span></div>
+    <div class="toc-item"><span>Chapter 6 · Placing Doors</span><span class="dots"></span><span class="pg">8</span></div>
+    <div class="toc-sub"><span>6.1 Traditional Kashmiri Double-Leaf Main Door</span><span class="dots"></span><span class="pg">8</span></div>
+    <div class="toc-sub"><span>6.2 Interior & Bedroom Doors</span><span class="dots"></span><span class="pg">8</span></div>
+    <div class="toc-item"><span>Chapter 7 · Placing Windows</span><span class="dots"></span><span class="pg">9</span></div>
+    <div class="toc-sub"><span>7.1 Kashmiri Lattice Window (Dab)</span><span class="dots"></span><span class="pg">9</span></div>
+    <div class="toc-sub"><span>7.2 Custom Window Families</span><span class="dots"></span><span class="pg">9</span></div>
+  </div>
+
+  <div class="toc-section">
+    <h4>Roof & Special Elements</h4>
+    <div class="toc-item"><span>Chapter 8 · Kashmiri Roof Design</span><span class="dots"></span><span class="pg">10</span></div>
+    <div class="toc-sub"><span>8.1 Roof by Footprint — Pitched Method</span><span class="dots"></span><span class="pg">10</span></div>
+    <div class="toc-sub"><span>8.2 Hip + Gable Combination</span><span class="dots"></span><span class="pg">10</span></div>
+    <div class="toc-sub"><span>8.3 Eaves Overhang Settings</span><span class="dots"></span><span class="pg">10</span></div>
+    <div class="toc-item"><span>Chapter 9 · Roof Fascia & Soffit</span><span class="dots"></span><span class="pg">11</span></div>
+    <div class="toc-item"><span>Chapter 10 · Zoon Dub (Cantilevered Balcony)</span><span class="dots"></span><span class="pg">11</span></div>
+    <div class="toc-item"><span>Chapter 11 · Khatamband Ceiling</span><span class="dots"></span><span class="pg">12</span></div>
+  </div>
+
+  <div class="toc-section">
+    <h4>Rendering & Documentation</h4>
+    <div class="toc-item"><span>Chapter 12 · 3D Views & Camera Setup</span><span class="dots"></span><span class="pg">13</span></div>
+    <div class="toc-item"><span>Chapter 13 · Lumion Rendering</span><span class="dots"></span><span class="pg">13</span></div>
+    <div class="toc-item"><span>Chapter 14 · Sheets & Documentation</span><span class="dots"></span><span class="pg">14</span></div>
+    <div class="toc-item"><span>Chapter 15 · Door, Window & Room Schedules</span><span class="dots"></span><span class="pg">14</span></div>
+    <div class="toc-item"><span>Appendix · Kashmiri Architectural Glossary & Resources</span><span class="dots"></span><span class="pg">15</span></div>
+  </div>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans</span>
+    <span>Page 2</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ CHAPTER 1 ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Chapter 1 · Kashmiri Architecture</span>
+  </div>
+
+  <div class="chapter-tag">Chapter 01</div>
+  <div class="chapter-title">Introduction to<br>Kashmiri Architecture</div>
+  <div class="chapter-subtitle">Understanding Traditional Elements Before Modeling</div>
+
+  <p>Kashmir's vernacular architecture is one of the most distinctive in the Indian subcontinent, shaped over centuries by the region's severe winters, heavy snowfall, seismic activity, and abundant deodar and walnut forests. Before modeling a Kashmiri house in Revit, it is essential to understand the structural and aesthetic elements that define this style.</p>
+
+  <h3>1.1 Taq Construction System</h3>
+  <p>The <strong>Taq</strong> system is a traditional load-bearing stone masonry technique where vertical stone piers carry horizontal deodar timber bands at each floor level. The horizontal bands (called <em>dhajji</em>) provide the seismic flexibility that allows the building to absorb earthquake energy without total collapse.</p>
+
+  <div class="two-col">
+    <div class="col-card">
+      <h4>Taq System — Key Specs</h4>
+      <ul class="spec-list">
+        <li>Stone masonry piers: 300–450 mm thick</li>
+        <li>Deodar timber bands at each floor level</li>
+        <li>Openings formed between piers</li>
+        <li>Lime mortar jointing</li>
+        <li>Multi-storey: 2–3 floors typical</li>
+      </ul>
+    </div>
+    <div class="col-card">
+      <h4>Dhajji Dewari — Key Specs</h4>
+      <ul class="spec-list">
+        <li>Braced timber frame (deodar) primary structure</li>
+        <li>Brick or stone infill in small panels</li>
+        <li>Mud mortar or lime used in infill</li>
+        <li>Visible "quilt" pattern on exterior wall</li>
+        <li>Excellent seismic performance</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>1.2 Key Architectural Features to Model</h3>
+  <table>
+    <thead><tr><th>Element</th><th>Kashmiri Name</th><th>Description</th><th>Revit Tool</th></tr></thead>
+    <tbody>
+      <tr><td>Cantilevered Balcony</td><td>Zoon Dub</td><td>Moon-viewing overhanging balcony projecting from upper floor; octagonal or square; lattice screens</td><td>Floor Slab + Railing</td></tr>
+      <tr><td>Lattice Wood Ceiling</td><td>Khatamband</td><td>Interlocking deodar/walnut geometric panels; no nails; Persian-inspired patterns</td><td>Ceiling + Material</td></tr>
+      <tr><td>Lattice Window Screen</td><td>Dab / Kandhak</td><td>Wooden lattice inserted in window opening for privacy; allows air circulation</td><td>Custom Window Family</td></tr>
+      <tr><td>Fretwork Screen</td><td>Pinjarakari</td><td>Carved geometric wooden screen on balcony railings and facades</td><td>Railing Family</td></tr>
+      <tr><td>Fireplace/Heater Alcove</td><td>Hamam</td><td>Sunken floor heating chamber using coals; integrated into floor plan</td><td>Floor + Specialty</td></tr>
+      <tr><td>Pitched Roof</td><td>—</td><td>30°–45° slope for snow shedding; large eave overhang 600–900 mm</td><td>Roof by Footprint</td></tr>
+    </tbody>
+  </table>
+
+  <h3>1.3 Climate Considerations</h3>
+  <div class="info-box">
+    <span class="label">Design Principle</span>
+    Kashmir receives snowfall from November to March. Roofs must be pitched at minimum 30° to ensure snow slides off. Eave overhangs of 600–900 mm protect mud-plastered or brick walls from rain and meltwater. All window sills are set at 900 mm above floor level to retain interior warmth.
+  </div>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans</span>
+    <span>Page 3</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ CHAPTER 2 ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Chapter 2 · Revit Setup</span>
+  </div>
+
+  <div class="chapter-tag">Chapter 02</div>
+  <div class="chapter-title">Revit Setup<br>& Interface</div>
+  <div class="chapter-subtitle">Starting Your Kashmiri House Project</div>
+
+  <h3>2.1 System Requirements</h3>
+  <table>
+    <caption>Minimum recommended specifications for Revit (as used by Kashmir House Plans channel)</caption>
+    <thead><tr><th>Component</th><th>Minimum</th><th>Recommended</th></tr></thead>
+    <tbody>
+      <tr><td>OS</td><td>Windows 10 (64-bit)</td><td>Windows 11 (64-bit)</td></tr>
+      <tr><td>CPU</td><td>Intel Core i5 (4-core)</td><td>Intel Core i7 / i9 (8-core+)</td></tr>
+      <tr><td>RAM</td><td>8 GB</td><td>16–32 GB</td></tr>
+      <tr><td>GPU</td><td>2 GB VRAM, DirectX 11</td><td>NVIDIA GTX 1060 / RTX 3060 (for Lumion)</td></tr>
+      <tr><td>Storage</td><td>30 GB free (SSD)</td><td>500 GB SSD</td></tr>
+      <tr><td>Display</td><td>1366 × 768</td><td>1920 × 1080 or higher</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2.2 Starting a New Project</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Open Revit → New → Project</strong>
+        Launch Autodesk Revit. On the Home screen click <em>New</em> under the Projects section.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Choose Template: Architectural Template</strong>
+        In the New Project dialog, select <em>Architectural Template</em> from the template drop-down. Click OK.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Save the Project File</strong>
+        Go to File → Save As → Project. Name it <code>KashmiriHouse_30x30.rvt</code>. Save to a dedicated project folder.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Set Project Units</strong>
+        Go to Manage tab → Settings → Project Units. Set Length to <em>Meters</em> (or Feet if working in Imperial). Area to m² / ft².
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>Set Project Location (Optional)</strong>
+        Go to Manage → Location → Srinagar, J&K, India. This enables sun path and shadow studies accurate to Kashmir's latitude (34.1°N).
+      </div>
+    </div>
+  </div>
+
+  <h3>2.3 Revit Interface Overview</h3>
+  <div class="figure-box">
+    <div class="fig-title">Revit Interface — Key Areas Used in This Tutorial</div>
+    <div class="fig-body">
+      <div class="diagram">
+┌────────────────────────────────────────────────────────┐
+│  [Ribbon Tabs]: Architecture  Structure  Annotate  View│
+│  ┌──────────┐  ┌──────────────────────────────────────┐│
+│  │ PROJECT  │  │                                      ││
+│  │ BROWSER  │  │         DRAWING CANVAS               ││
+│  │          │  │       (Floor Plan / 3D View)         ││
+│  │ Views    │  │                                      ││
+│  │ Sheets   │  │                                      ││
+│  │ Families │  │                                      ││
+│  │ Groups   │  │                                      ││
+│  └──────────┘  └──────────────────────────────────────┘│
+│  [Properties Panel]       [View Control Bar]           │
+│  [Status Bar] ─── Type Selector ─── Options Bar       │
+└────────────────────────────────────────────────────────┘</div>
+      <div class="fig-caption">Fig 2.1 — Revit workspace. The Project Browser (left) holds all views; the Canvas (center) is your drawing area.</div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <span class="label">Pro Tip — Kashmir House Plans Channel</span>
+    The channel creator works primarily in the <strong>Floor Plan</strong> view to draw walls and place doors/windows, then switches to the <strong>3D View</strong> to check geometry before creating the roof. Always keep both views open in split-screen.
+  </div>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans</span>
+    <span>Page 4</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ CHAPTER 3 ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Chapter 3 · Levels & Grids</span>
+  </div>
+
+  <div class="chapter-tag">Chapter 03</div>
+  <div class="chapter-title">Levels & Grids</div>
+  <div class="chapter-subtitle">Establishing the Vertical Framework of Your 30×30 ft Kashmiri Home</div>
+
+  <p>Levels define each horizontal plane (floor-to-floor heights) in your building. For a 30×30 ft (9.1×9.1 m) two-storey Kashmiri house, we set up four levels.</p>
+
+  <h3>3.1 Setting Up Levels</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Open an Elevation View</strong>
+        In the Project Browser, expand Views → Elevations → South Elevation. Double-click to open.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Set Level 1 — Ground Floor</strong>
+        The default Level 1 is at 0.0 m. This is your ground floor (±0.00 m finished floor level).
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Create Level 2 — First Floor</strong>
+        Architecture tab → Datum → Level. Draw a horizontal line at 3.0 m above Level 1. Name it "Level 2 – First Floor".
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Create Roof Level</strong>
+        Add another level at 6.1 m (3.1 m above Level 2). Name it "Roof Level". This is the top of the wall / eave line.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>Verify Floor-to-Floor Heights</strong>
+        Ground Floor to First Floor: 3.0 m · First Floor to Roof: 3.1 m (extra 100 mm for structural slab)
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <caption>Level Schedule — 30×30 ft Kashmiri House</caption>
+    <thead><tr><th>Level Name</th><th>Elevation</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Level 1 — Ground Floor</td><td>0.00 m (±0)</td><td>Entrance, living, kitchen, guest room</td></tr>
+      <tr><td>Level 2 — First Floor</td><td>3.00 m</td><td>Bedrooms, Zoon Dub balcony</td></tr>
+      <tr><td>Roof Level</td><td>6.10 m</td><td>Eave / top of wall, start of roof pitch</td></tr>
+      <tr><td>Roof Ridge</td><td>8.50 m (approx.)</td><td>Peak of gable — auto-calculated by Revit</td></tr>
+    </tbody>
+  </table>
+
+  <h3>3.2 Setting Up Grids</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Switch to Floor Plan — Level 1</strong>
+        Project Browser → Views → Floor Plans → Level 1.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Draw Vertical Grids (A, B, C)</strong>
+        Architecture → Datum → Grid. Draw vertical grids at: A = 0.0 m, B = 4.6 m, C = 9.1 m (total 30 ft = 9.144 m ≈ 9.1 m).
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Draw Horizontal Grids (1, 2, 3)</strong>
+        Draw horizontal grids at: 1 = 0.0 m, 2 = 4.6 m, 3 = 9.1 m.
+      </div>
+    </div>
+  </div>
+
+  <div class="figure-box">
+    <div class="fig-title">Grid Layout — 30×30 ft (9.1×9.1 m) Plan</div>
+    <div class="fig-body">
+      <div class="diagram">
+         A          B          C
+         |          |          |
+  ───────┼──────────┼──────────┼─────── 3 (9.1m)
+         │          │          │
+         │ BEDROOM  │ BEDROOM  │
+  ───────┼──────────┼──────────┼─────── 2 (4.6m)
+         │          │          │
+         │  LIVING  │ KITCHEN  │
+  ───────┼──────────┼──────────┼─────── 1 (0.0m)
+       0.0m       4.6m       9.1m</div>
+      <div class="fig-caption">Fig 3.1 — Grid lines divide the 30×30 ft plan into zones. Walls will be drawn along these lines.</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans</span>
+    <span>Page 5</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ CHAPTER 4 ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Chapter 4 · Drawing Walls</span>
+  </div>
+
+  <div class="chapter-tag">Chapter 04</div>
+  <div class="chapter-title">Drawing Kashmiri Walls</div>
+  <div class="chapter-subtitle">Exterior Stone Walls, Timber-Frame Walls, and Interior Partitions</div>
+
+  <h3>4.1 Creating Exterior Wall Types</h3>
+  <p>Kashmiri exterior walls use stone or brick masonry (Taq system) with deodar timber bands. In Revit, we create a custom wall type to reflect this.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Open Wall Type Properties</strong>
+        Architecture tab → Build → Wall (dropdown) → Wall: Architectural. In the Properties panel, click <em>Edit Type</em>.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Duplicate and Name the Wall Type</strong>
+        Click <em>Duplicate</em>. Name it <code>Kashmiri_Ext_Wall_300mm</code>. Click OK.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Edit the Wall Structure (Layers)</strong>
+        Click <em>Edit</em> next to Structure. Set up layers as shown in the table below.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Apply Material — Stone Rubble Masonry</strong>
+        For the core layer, click the material cell → Browse → search "Stone" → select <em>Stone, Rubble</em>. Assign color: warm grey (RGB 140, 130, 120).
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <caption>Kashmiri Exterior Wall — Layer Composition (Total 300 mm)</caption>
+    <thead><tr><th>#</th><th>Function</th><th>Material</th><th>Thickness</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Finish — Exterior</td><td>Lime Plaster (rough)</td><td>20 mm</td></tr>
+      <tr><td>2</td><td>Substrate</td><td>Stone Rubble Masonry (Taq piers)</td><td>230 mm</td></tr>
+      <tr><td>3</td><td>Thermal Membrane</td><td>Air Gap</td><td>20 mm</td></tr>
+      <tr><td>4</td><td>Finish — Interior</td><td>Lime / Mud Plaster</td><td>30 mm</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.2 Drawing Exterior Walls — Ground Floor</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Select the Wall Type</strong>
+        Architecture → Wall. In the Type Selector (top left), choose <code>Kashmiri_Ext_Wall_300mm</code>.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Set Wall Height</strong>
+        In Options Bar, set Height: <em>Level 2 — First Floor</em>. Set Location Line: <em>Wall Centerline</em>.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Draw the Four Exterior Walls</strong>
+        Click corners of the 9.1×9.1 m rectangle: start at (0,0) → (9.1,0) → (9.1,9.1) → (0,9.1) → back to (0,0). Press Escape when done.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Check in 3D View</strong>
+        Press shortcut <strong>{ 3D }</strong> or View → 3D View → Default 3D. Verify the four walls form a closed box at 3.0 m height.
+      </div>
+    </div>
+  </div>
+
+  <h3>4.3 Interior Partition Walls</h3>
+  <p>Create a second wall type for internal partitions: <code>Kashmiri_Int_Wall_115mm</code> — single-leaf brick (115 mm) with plaster both sides (total 155 mm).</p>
+
+  <div class="info-box">
+    <span class="label">Room Layout — Ground Floor (30×30 ft)</span>
+    Draw partition walls to create: <strong>Main Entrance Hall</strong> (2.0×1.5 m) · <strong>Living Room</strong> (4.5×4.0 m) · <strong>Dining Room</strong> (3.0×3.5 m) · <strong>Kitchen</strong> (3.5×3.0 m) · <strong>Guest Room / Store</strong> (3.0×3.0 m) · <strong>Bathroom (Ground)</strong> (1.8×2.0 m) · <strong>Staircase Hall</strong> (2.0×3.0 m)
+  </div>
+
+  <div class="warn-box">
+    <span class="label">Common Mistake</span>
+    When drawing interior walls, ensure the wall end snaps exactly to the exterior wall face. Use <em>Tab</em> to cycle snap points. Walls that do not connect properly cause roof and ceiling generation errors later.
+  </div>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans</span>
+    <span>Page 6</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ CHAPTER 5 ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Chapter 5 · Floors · Chapter 6 · Doors</span>
+  </div>
+
+  <div class="chapter-tag">Chapter 05</div>
+  <div class="chapter-title">Floors & Slabs</div>
+  <div class="chapter-subtitle">Ground Floor Concrete Slab and First Floor Structural Slab</div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Architecture → Floor → Floor: Architectural</strong>
+        Stay in Floor Plan — Level 1. Select the Floor tool.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Create Floor Type: <code>Kashmiri_GF_Slab_150mm</code></strong>
+        Edit Type → Duplicate. Layers: Kota Stone Tiles 20mm + Cement Screed 30mm + RCC Slab 100mm = 150mm total.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Sketch the Floor Boundary</strong>
+        Use Pick Walls mode to auto-trace the interior face of all exterior walls. Click Finish Edit Mode (✓).
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Repeat for Level 2 — First Floor</strong>
+        Switch to Floor Plan Level 2. Create <code>Kashmiri_FF_Slab_175mm</code> (RCC 125mm + screed + tile). Sketch same footprint.
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="label">Traditional Kashmiri Floor Finish</span>
+    Traditional Kashmiri homes used compressed mud and cow-dung mixed floor finish (Mandal) on ground floors. For a modern project, use polished Kota stone or ceramic tiles. Specify material as "Kota Stone — Kotah Blue" in Revit's material browser.
+  </div>
+
+  <!-- CHAPTER 6 -->
+  <div class="chapter-tag" style="margin-top:8mm">Chapter 06</div>
+  <div class="chapter-title">Placing Doors</div>
+  <div class="chapter-subtitle">Traditional Kashmiri Carved Doors — Main Entrance, Bedroom & Interior</div>
+
+  <h3>6.1 Main Entrance — Double-Leaf Carved Door</h3>
+  <p>The traditional Kashmiri main entrance is a carved double-leaf deodar door with intricate Islamic/floral geometric motifs. In Revit, we load a suitable family and modify it.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Load a Door Family</strong>
+        Architecture → Door → Load Family (or Insert → Load Family). Navigate to Doors folder. Select <em>Double-Flush.rfa</em> as base.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Set Door Dimensions</strong>
+        In Properties: Width = 1200 mm (double-leaf = 2 × 600 mm). Height = 2100 mm. Frame Width = 75 mm (deodar timber).
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Apply Material — Deodar Wood</strong>
+        Edit Type → Door Material → Browse → "Wood" → select <em>Wood — Walnut</em>. Apply warm brown color (RGB 101, 67, 33).
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Place on South Exterior Wall</strong>
+        Click on the south wall approximately at center (4.55 m from west corner). Verify swing direction — inward-opening for Kashmiri homes.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>Add Sill & Frame Details</strong>
+        Set Sill Height = 0 mm (flush with floor). Add a 200 mm stone threshold (Specialty Equipment family) below the door.
+      </div>
+    </div>
+  </div>
+
+  <h3>6.2 Door Schedule</h3>
+  <table>
+    <thead><tr><th>ID</th><th>Location</th><th>Type</th><th>Width</th><th>Height</th><th>Material</th><th>Sill Ht.</th></tr></thead>
+    <tbody>
+      <tr><td>D1</td><td>Main Entrance (South)</td><td>Double-Leaf Carved</td><td>1200 mm</td><td>2100 mm</td><td>Deodar wood</td><td>0 mm</td></tr>
+      <tr><td>D2</td><td>Living → Dining</td><td>Single Panel</td><td>900 mm</td><td>2100 mm</td><td>Walnut</td><td>0 mm</td></tr>
+      <tr><td>D3</td><td>Kitchen</td><td>Single Flush</td><td>900 mm</td><td>2100 mm</td><td>Flush / Plywood</td><td>0 mm</td></tr>
+      <tr><td>D4</td><td>Guest Room</td><td>Single Panel</td><td>900 mm</td><td>2100 mm</td><td>Walnut</td><td>0 mm</td></tr>
+      <tr><td>D5</td><td>Bathroom (GF)</td><td>Single — Waterproof</td><td>750 mm</td><td>2100 mm</td><td>PVC / WPC</td><td>0 mm</td></tr>
+      <tr><td>D6</td><td>Master Bedroom (FF)</td><td>Double-Leaf Panel</td><td>1050 mm</td><td>2100 mm</td><td>Walnut carved</td><td>0 mm</td></tr>
+      <tr><td>D7</td><td>Bedroom 2 (FF)</td><td>Single Panel</td><td>900 mm</td><td>2100 mm</td><td>Walnut</td><td>0 mm</td></tr>
+      <tr><td>D8</td><td>Bathroom (FF)</td><td>Single — Waterproof</td><td>750 mm</td><td>2100 mm</td><td>PVC / WPC</td><td>0 mm</td></tr>
+      <tr><td>D9</td><td>Zoon Dub Access</td><td>Glass + Wood Frame</td><td>900 mm</td><td>2200 mm</td><td>Deodar + Glass</td><td>0 mm</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans</span>
+    <span>Page 7 – 8</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ CHAPTER 7 ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Chapter 7 · Windows</span>
+  </div>
+
+  <div class="chapter-tag">Chapter 07</div>
+  <div class="chapter-title">Placing Windows</div>
+  <div class="chapter-subtitle">Kashmiri Lattice Windows (Dab), Custom Families & Window Schedule</div>
+
+  <p>Windows in traditional Kashmiri homes are characterized by their wooden lattice screens (Dab), lower-than-standard sill heights, and carved deodar frames. For modern Kashmiri houses as shown on the channel, uPVC or aluminum frames with decorative grills are used.</p>
+
+  <h3>7.1 Making a Simple Window in Revit (Beginner Method)</h3>
+  <p><em>This mirrors the tutorial: "How to make a simple window in Revit — for beginners || Kashmir House Plans"</em></p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Architecture → Window</strong>
+        Click the Window tool in the Architecture tab → Build group.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Select Window Type</strong>
+        In the Type Selector, choose <em>Fixed: 0610 × 0610 mm</em> as a starting base. We will edit this.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Edit Type → Duplicate → Name: <code>Kashmiri_Dab_Window_1200x1200</code></strong>
+        Set: Width = 1200 mm · Height = 1200 mm · Frame Width = 65 mm · Frame Material = Deodar Wood.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Set Sill Height in Instance Properties</strong>
+        After placing, select the window. In Properties panel: Sill Height = 900 mm (standard for Kashmiri rooms). Head Height auto-calculates to 2100 mm.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>Verify Arrow Direction</strong>
+        The arrow symbol on the window shows exterior/interior faces. Ensure it points to the outside. If reversed, click the <em>Flip</em> icon that appears when the window is selected.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <strong>Place Windows on All Four Exterior Walls</strong>
+        Follow the window schedule below. Place using exact offset dimensions from wall corners (use the Temporary Dimension that appears after placement).
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <strong>Add Lattice Pattern (Dab) via Material</strong>
+        For an authentic look, apply a custom material with a lattice texture image to the glass pane layer of the window family.
+      </div>
+    </div>
+  </div>
+
+  <h3>7.2 Window Schedule — 30×30 ft Kashmiri House</h3>
+  <table>
+    <thead><tr><th>ID</th><th>Room</th><th>Wall</th><th>Width</th><th>Height</th><th>Sill Ht</th><th>Type</th><th>Material</th></tr></thead>
+    <tbody>
+      <tr><td>W1</td><td>Living Room</td><td>South</td><td>1500 mm</td><td>1200 mm</td><td>900 mm</td><td>Casement</td><td>Aluminium + Deodar frame</td></tr>
+      <tr><td>W2</td><td>Living Room</td><td>West</td><td>1200 mm</td><td>1200 mm</td><td>900 mm</td><td>Fixed + Lattice</td><td>Deodar Dab</td></tr>
+      <tr><td>W3</td><td>Dining Room</td><td>East</td><td>1200 mm</td><td>1200 mm</td><td>900 mm</td><td>Sliding</td><td>Aluminium</td></tr>
+      <tr><td>W4</td><td>Kitchen</td><td>North</td><td>900 mm</td><td>900 mm</td><td>1050 mm</td><td>Awning / Ventilation</td><td>Aluminium</td></tr>
+      <tr><td>W5</td><td>Guest Room</td><td>West</td><td>1200 mm</td><td>1200 mm</td><td>900 mm</td><td>Casement</td><td>Deodar carved</td></tr>
+      <tr><td>W6</td><td>Bathroom GF</td><td>North</td><td>600 mm</td><td>600 mm</td><td>1500 mm</td><td>Fixed/Frosted</td><td>Aluminium</td></tr>
+      <tr><td>W7</td><td>Master Bedroom</td><td>South</td><td>1500 mm</td><td>1350 mm</td><td>750 mm</td><td>Bay / Projected</td><td>Deodar + glass</td></tr>
+      <tr><td>W8</td><td>Master Bedroom</td><td>East</td><td>1200 mm</td><td>1200 mm</td><td>900 mm</td><td>Lattice (Dab)</td><td>Deodar Dab carved</td></tr>
+      <tr><td>W9</td><td>Bedroom 2</td><td>West</td><td>1200 mm</td><td>1200 mm</td><td>900 mm</td><td>Casement</td><td>Aluminium</td></tr>
+      <tr><td>W10</td><td>Bedroom 2</td><td>North</td><td>1200 mm</td><td>1200 mm</td><td>900 mm</td><td>Fixed</td><td>Deodar</td></tr>
+      <tr><td>W11</td><td>Bathroom FF</td><td>East</td><td>600 mm</td><td>600 mm</td><td>1500 mm</td><td>Fixed/Frosted</td><td>Aluminium</td></tr>
+      <tr><td>W12</td><td>Staircase</td><td>East</td><td>600 mm</td><td>900 mm</td><td>1200 mm</td><td>Fixed</td><td>Aluminium</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip-box">
+    <span class="label">Channel Tip — Kashmiri Window Sizes</span>
+    The Kashmir House Plans creator uses <strong>1200×1200 mm</strong> as the standard bedroom window size and <strong>1500×1200 mm</strong> for living rooms in a 30×30 ft plan. Bathrooms always use <strong>600×600 mm frosted</strong> glass. Follow these proportions for an authentic look.
+  </div>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans</span>
+    <span>Page 9</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ CHAPTER 8 ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Chapter 8 · Kashmiri Roof Design</span>
+  </div>
+
+  <div class="chapter-tag">Chapter 08</div>
+  <div class="chapter-title">Kashmiri Roof Design</div>
+  <div class="chapter-subtitle">Complex Pitched Roof — Hip + Gable Combination for Snow Load</div>
+
+  <p><em>Based on tutorials: "Complex roof tutorial in Revit || Kashmir house plans" and "Complex Kashmiri roof design || Kashmir house plans"</em></p>
+
+  <p>The Kashmiri roof is the most distinctive and technically challenging element to model in Revit. It is a <strong>steeply pitched hip-gable combination</strong> roof, designed to shed heavy Himalayan snowfall. The pitch ranges from 30° to 45°, with a generous eave overhang of 600–900 mm.</p>
+
+  <h3>8.1 Creating the Roof by Footprint</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Switch to Floor Plan — Roof Level</strong>
+        Project Browser → Floor Plans → Roof Level.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Architecture → Roof → Roof by Footprint</strong>
+        Click the Roof dropdown → Roof by Footprint. Revit enters sketch mode.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Use Pick Walls to Trace Exterior Walls</strong>
+        In the Options Bar: check <em>Defines Slope</em>. Set Overhang = 700 mm. Click on each of the four exterior walls to create the roof boundary.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Set the Roof Pitch</strong>
+        Select all four boundary lines. In Properties, set <em>Slope</em> = 35.00° (or 8:12 rise/run for imperial). This gives the characteristic steep Kashmiri pitch.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>Create Gable Ends (Uncheck Slope on Two Sides)</strong>
+        For a <strong>Gable roof</strong>: select the two shorter boundary lines → in Options Bar uncheck <em>Defines Slope</em>. These become vertical gable walls.
+        For a <strong>Hip roof</strong>: leave all four sides with slope defined.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <strong>Finish the Roof Sketch</strong>
+        Click the green checkmark (✓) to finish editing. Revit generates the 3D roof form.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <strong>Attach Walls to Roof</strong>
+        Select all exterior walls of the upper floor. Modify → Modify Walls → Attach Top/Base. Click <em>Attach Top</em>, then click the roof. Walls will cut to follow the roof slope at gable ends.
+      </div>
+    </div>
+  </div>
+
+  <h3>8.2 Roof Material — Kashmiri Specifications</h3>
+  <table>
+    <thead><tr><th>Property</th><th>Value</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Roof Type</td><td>Hip-Gable Combination</td><td>Hip at ends, gable over main span</td></tr>
+      <tr><td>Pitch</td><td>35° (approx. 8.75:12)</td><td>Minimum 30° for Kashmir snow loads</td></tr>
+      <tr><td>Material (Outer)</td><td>Corrugated GI Sheet 0.5 mm</td><td>Galvanized steel, zinc-coated</td></tr>
+      <tr><td>Substrate</td><td>Deodar planks 25 mm</td><td>Laid on timber purlins</td></tr>
+      <tr><td>Purlins</td><td>75×50 mm deodar @ 600 mm c/c</td><td>Running parallel to ridge</td></tr>
+      <tr><td>Rafters</td><td>100×50 mm deodar @ 600 mm c/c</td><td>Running from eave to ridge</td></tr>
+      <tr><td>Ridge Board</td><td>200×25 mm deodar</td><td>At the apex/ridge</td></tr>
+      <tr><td>Eave Overhang</td><td>700 mm</td><td>Protects mud/brick walls from rain</td></tr>
+      <tr><td>Color</td><td>Zinc grey / Dark red oxide</td><td>Traditional Kashmiri palette</td></tr>
+    </tbody>
+  </table>
+
+  <h3>8.3 Measuring Roof Dimensions in Revit</h3>
+  <p><em>Based on: "How to measure roof dimensions in Revit || quick revit tutorial || Kashmir house plans"</em></p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content"><strong>Open the Roof in 3D View</strong> — Orbit to get a clear view of the roof surface.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content"><strong>Annotate → Aligned Dimension</strong> — Click two points on the roof edge to measure the rafter length (eave to ridge).</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content"><strong>Use Temporary Dimensions</strong> — Click on any roof edge; temporary dimensions appear showing the slope length, width, and overhang automatically.</div>
+    </div>
+  </div>
+
+  <div class="warn-box">
+    <span class="label">Common Revit Roof Error — "Too Many Intersections"</span>
+    If Revit shows a warning about roof intersections, it usually means boundary lines are not forming a clean closed loop. Zoom in at corners and ensure no overlaps or gaps exist between boundary sketch lines before finishing.
+  </div>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans</span>
+    <span>Page 10</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ CHAPTER 9 & 10 ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Chapter 9 · Fascia & Soffit · Chapter 10 · Zoon Dub</span>
+  </div>
+
+  <div class="chapter-tag">Chapter 09</div>
+  <div class="chapter-title">Roof Fascia & Soffit</div>
+  <div class="chapter-subtitle">The Easiest Way — As Shown in Kashmir House Plans Tutorial</div>
+
+  <p><em>Based on: "Roof fascia and soffit Revit tutorial easiest way || Kashmir house plans"</em></p>
+
+  <h3>9.1 Adding Fascia</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Select the Roof → Architecture → Fascia</strong>
+        Click the roof in 3D view. Go to Architecture tab → Roof group → Fascia (within the Roof dropdown).
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Load a Fascia Profile Family</strong>
+        Use <em>Rectangular:75×200mm</em> profile. Material: Deodar Wood (painted white or natural). This is the traditional Kashmiri fascia board.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Click Each Eave Edge</strong>
+        Click on each of the four eave edges of the roof (at the 700 mm overhang). Revit places the fascia board along the entire eave length.
+      </div>
+    </div>
+  </div>
+
+  <h3>9.2 Adding Soffit</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Architecture → Roof → Soffit</strong>
+        The soffit fills the underside of the overhang — the horizontal surface between the wall face and the fascia.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Sketch the Soffit Boundary</strong>
+        Draw a rectangle from the exterior wall face out to the fascia position (700 mm wide, all four sides). Material: Painted timber boarding.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Finish and Verify in 3D</strong>
+        Click ✓. In 3D view, the eave soffit should now show as a clean horizontal panel below the roof overhang.
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="label">Kashmiri Soffit Tradition</span>
+    In authentic Kashmiri homes, the soffit is made from deodar planks (25 mm thick, 100 mm wide) laid parallel to the eave, painted white or left natural. This is called <em>Tul</em> locally and protects the eave structure from rain. Khatamband-style geometric patterns are sometimes applied to the soffit of verandahs.
+  </div>
+
+  <!-- CHAPTER 10 -->
+  <div class="chapter-tag" style="margin-top:8mm">Chapter 10</div>
+  <div class="chapter-title">Zoon Dub — Cantilevered Balcony</div>
+  <div class="chapter-subtitle">Kashmir's Iconic Moon-Viewing Overhanging Balcony</div>
+
+  <p>The <strong>Zoon Dub</strong> (meaning "Moon Balcony") is a defining feature of Srinagar's urban residential architecture. It is a cantilevered balcony projecting 1.0–1.5 m from the first floor facade, enclosed with intricate wooden lattice screens (Pinjarakari) for privacy and decorative effect.</p>
+
+  <h3>10.1 Creating the Zoon Dub in Revit</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Floor Plan — Level 2. Architecture → Floor</strong>
+        Create a new floor extending 1.2 m beyond the south exterior wall on the first floor. This is the cantilevered slab.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Sketch the Balcony Slab</strong>
+        Draw the floor boundary: 3.6 m wide × 1.2 m deep, centered on south facade. Floor type: <code>RCC_Slab_125mm</code>. Finish (✓).
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Add Balcony Enclosure Walls</strong>
+        Draw three short walls (two side walls 1.2 m long, one front wall 3.6 m long) at 1.0 m height around the balcony perimeter. Type: <code>Kashmiri_Int_Wall_115mm</code>.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Add Lattice Railing (Pinjarakari)</strong>
+        Architecture → Railing → Sketch Path. Trace the three balcony edges. Select railing type with a lattice panel infill. Material: Walnut wood, dark finish.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>Add Access Door D9</strong>
+        Place door D9 (900×2200 mm, glass + deodar frame) on the south wall at Level 2, opening into the Zoon Dub. This is typically in the master bedroom.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <strong>Add Roof / Canopy Over Zoon Dub</strong>
+        Create a small projected roof over the Zoon Dub using Roof by Footprint, pitch 30°, overhang 300 mm on three sides.
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans</span>
+    <span>Page 11</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ CHAPTER 11 ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Chapter 11 · Khatamband Ceiling · Chapter 12 · 3D Views</span>
+  </div>
+
+  <div class="chapter-tag">Chapter 11</div>
+  <div class="chapter-title">Khatamband Ceiling</div>
+  <div class="chapter-subtitle">Kashmir's Signature Geometric Interlocking Wood-Panel Ceiling</div>
+
+  <p>The <strong>Khatamband</strong> is one of Kashmir's greatest craft traditions — a ceiling composed of small interlocking pieces of deodar, walnut, or fir wood fitted together in geometric patterns without nails or glue. The joinery alone holds the structure. Patterns include Muraba (square), Kansut, Sarva, Lakut, Badam (almond), and Sakhur.</p>
+
+  <h3>11.1 Creating a Khatamband Ceiling in Revit</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Architecture → Ceiling → Compound Ceiling</strong>
+        In Floor Plan Level 1 view, click the Ceiling tool. Select <em>Compound Ceiling: 600×600 mm Grid</em> as base type.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Create Ceiling Type: <code>Khatamband_Deodar</code></strong>
+        Edit Type → Duplicate. In Structure layers: Deodar Wood panels 20 mm. Set ceiling height = 2700 mm above floor (300 mm below the 3000 mm floor-to-floor).
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Apply Wood Material with Geometric Pattern</strong>
+        Material: Wood — Walnut/Deodar. In the material's Surface Pattern, apply a geometric hatch pattern that mimics the Khatamband grid. Use a custom 45° diagonal diamond pattern.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Click Inside Room Boundaries</strong>
+        Revit auto-detects room boundaries. Click inside the Living Room, Master Bedroom, and Dining Room to place the Khatamband ceiling. Bathrooms and kitchen get a plain plaster ceiling.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>Verify Height in Section View</strong>
+        Cut a section through the living room. The ceiling should sit at 2700 mm, leaving a 300 mm plenum space above for concealed wiring and the structural slab.
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="label">Khatamband Pattern Reference</span>
+    For photorealistic Lumion rendering, use a high-resolution Khatamband texture photograph as the material bitmap. Search for "khatamband ceiling texture" and apply it as a Decal or Surface Pattern with a scale of 300×300 mm per panel unit for accurate proportions.
+  </div>
+
+  <div class="figure-box">
+    <div class="fig-title">Khatamband — Common Geometric Patterns</div>
+    <div class="fig-body">
+      <div class="diagram">
+  MURABA (Square)    BADAM (Almond)    SARVA (Pine)
+  ┌──┬──┬──┬──┐      ◇  ◇  ◇           /\  /\  /\
+  ├──┼──┼──┼──┤     ◇  ◇  ◇  ◇        /  \/  \/  \
+  ├──┼──┼──┼──┤      ◇  ◇  ◇          \  /\  /\  /
+  └──┴──┴──┴──┘     ◇  ◇  ◇  ◇        \/  \/  \/
+
+  KANSUT (Diagonal)  BOD (Large)       SAKHUR (Star)
+  /\/\/\/\/\         ╔════════╗          ★  ★  ★
+  \/\/\/\/\/         ║        ║         ★  ★  ★  ★
+  /\/\/\/\/\         ║  BOLD  ║          ★  ★  ★
+  \/\/\/\/\/         ╚════════╝         ★  ★  ★  ★</div>
+      <div class="fig-caption">Fig 11.1 — Six common Khatamband patterns. Use these as reference for material surface patterns in Revit and Lumion.</div>
+    </div>
+  </div>
+
+  <!-- CHAPTER 12 -->
+  <div class="chapter-tag" style="margin-top:8mm">Chapter 12</div>
+  <div class="chapter-title">3D Views & Camera Setup</div>
+  <div class="chapter-subtitle">Presenting Your Kashmiri House Design</div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content"><strong>Default 3D View</strong> — Press the house icon on the Quick Access Toolbar, or View → 3D Views → {3D}. Use Shift+Middle Mouse to orbit.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content"><strong>Camera View (Perspective)</strong> — View → 3D Views → Camera. Click to set camera position (south of building), then drag to set the target point (center of facade). A perspective view opens.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content"><strong>Name and Save the View</strong> — In Project Browser, right-click the new 3D view → Rename: "Exterior — South Perspective". Create additional views: "Aerial — NW Isometric", "Interior — Living Room", "Roof Detail".</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content"><strong>Render in Revit (Basic)</strong> — View → Render. Set Quality = Draft for preview, High for final. Style = Exterior: Sun and Sky. Sun: Srinagar, June noon for summer shadows.</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans</span>
+    <span>Page 12</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ CHAPTER 13 ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Chapter 13 · Lumion Rendering</span>
+  </div>
+
+  <div class="chapter-tag">Chapter 13</div>
+  <div class="chapter-title">Lumion Rendering</div>
+  <div class="chapter-subtitle">Photorealistic Kashmiri House Visualization — As Used on the Channel</div>
+
+  <p><em>Based on: "Designing a Modern 35×35 House with Revit and Lumion || Kashmir House Plans" and "Kashmiri House Design rendering in Revit New (tutorial)"</em></p>
+
+  <p>Lumion is the primary rendering software used on the Kashmir House Plans channel for producing photorealistic exterior and interior visualizations. The workflow moves from Revit → Lumion via the LiveSync plugin or direct export.</p>
+
+  <h3>13.1 Exporting from Revit to Lumion</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Install Lumion LiveSync Plugin for Revit</strong>
+        Download from lumion.com/revit-rendering. Install. Restart Revit. A new "Lumion" tab appears in the ribbon.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Open LiveSync</strong>
+        Lumion tab → LiveSync → Start LiveSync. Open Lumion separately. The model appears live in Lumion and updates as you make changes in Revit.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Alternatively: Export as Collada (.dae)</strong>
+        File → Export → CAD Formats → Collada (.dae). Open Lumion → Import → Browse to the .dae file. Scale: 1:1, Units: Meters.
+      </div>
+    </div>
+  </div>
+
+  <h3>13.2 Applying Materials in Lumion — Kashmiri Palette</h3>
+  <table>
+    <thead><tr><th>Surface</th><th>Lumion Material</th><th>Settings</th></tr></thead>
+    <tbody>
+      <tr><td>Exterior Walls</td><td>Stone — Rubble / Rough Plaster</td><td>Color: warm off-white (cream). Roughness: 0.85. Scale: 1.5</td></tr>
+      <tr><td>Roof (GI Sheet)</td><td>Metal — Corrugated</td><td>Color: zinc grey or dark red. Reflectance: 0.3. Corrugation scale: 0.05</td></tr>
+      <tr><td>Timber Frames</td><td>Wood — Dark Walnut</td><td>Color: RGB 80, 50, 20. Reflectance: 0.15</td></tr>
+      <tr><td>Khatamband Ceiling</td><td>Wood — Deodar / Cedar</td><td>Apply custom texture. Bump: 0.3. Scale: 0.3 m per panel</td></tr>
+      <tr><td>Windows (Glass)</td><td>Glass — Clear</td><td>Reflectance: 0.6. Opacity: 0.25</td></tr>
+      <tr><td>Ground/Compound</td><td>Stone — Flagstone / Cobble</td><td>Color: grey-brown. Scale: 0.5 m</td></tr>
+      <tr><td>Interior Floors</td><td>Stone — Kota / Marble</td><td>Color: blue-grey. Polished: reflectance 0.5</td></tr>
+    </tbody>
+  </table>
+
+  <h3>13.3 Lumion Scene Setup — Kashmiri Context</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content"><strong>Choose Landscape Template</strong> — Select Mountains landscape. Kashmir sits in a Himalayan valley; use the mountain terrain with snow-capped peaks in the far background.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content"><strong>Add Vegetation</strong> — Place Chinar trees (use large deciduous tree family, autumn red-gold color). Add Deodar cedar trees around the compound boundary. Poplar trees along the street.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content"><strong>Set Sky & Sun</strong> — Time: 10:00 AM. Season: Autumn (October) for the iconic Kashmiri Chinar foliage. Sky: partly cloudy. Sun intensity: 75%.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content"><strong>Add People & Context</strong> — Place a few human figures in traditional Kashmiri dress (Pheran) near the entrance for scale. Add a wooden gate and compound wall.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content"><strong>Interior Lighting</strong> — Place warm Omni lights (2700K) inside rooms visible through windows. This creates a warm glow contrasting with the cool mountain exterior light.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content"><strong>Render Final Images</strong> — Render → Photo. Resolution: 3840×2160 (4K). Style: Hyperlight or Realistic. Save as PNG. Typical render time: 2–8 minutes per image.</div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <span class="label">Channel Style Note</span>
+    The Kashmir House Plans channel typically renders exterior south-facing perspectives with autumn lighting, showing the Zoon Dub balcony prominently, the complex pitched roof, and surrounding Chinar trees. This composition maximizes the visual impact of the traditional Kashmiri design elements.
+  </div>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans</span>
+    <span>Page 13</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ CHAPTER 14 & 15 ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Chapter 14 · Documentation · Chapter 15 · Schedules</span>
+  </div>
+
+  <div class="chapter-tag">Chapter 14</div>
+  <div class="chapter-title">Sheets & Documentation</div>
+  <div class="chapter-subtitle">Producing Construction-Ready Drawing Sets</div>
+
+  <h3>14.1 Creating Drawing Sheets</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content"><strong>View → Sheet → New Sheet</strong> → Select titleblock: A1 (841×594 mm). Name: "Floor Plan — Ground Floor". Repeat for each sheet.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content"><strong>Drag Views onto Sheets</strong> — From Project Browser, drag "Floor Plan Level 1" onto the A1 sheet. Position at scale 1:50.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content"><strong>Add Dimensions</strong> — Annotate → Aligned Dimension. Dimension all outer walls, room widths, door and window positions on each plan.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content"><strong>Add Room Tags</strong> — Architecture → Room Tag. Click inside each room. The tag shows the room name and area automatically.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content"><strong>Add North Arrow</strong> — Insert → Load Family → Annotations → North Arrow. Place on each floor plan sheet.</div>
+    </div>
+  </div>
+
+  <table>
+    <caption>Recommended Drawing Sheet Set — 30×30 ft Kashmiri House</caption>
+    <thead><tr><th>Sheet No.</th><th>Title</th><th>Scale</th><th>Views Included</th></tr></thead>
+    <tbody>
+      <tr><td>A-001</td><td>Site Plan & Location Map</td><td>1:200</td><td>Site plan, north arrow, road access</td></tr>
+      <tr><td>A-101</td><td>Ground Floor Plan</td><td>1:50</td><td>Floor Plan Level 1 + Room Tags + Dimensions</td></tr>
+      <tr><td>A-102</td><td>First Floor Plan</td><td>1:50</td><td>Floor Plan Level 2 + Zoon Dub + Dimensions</td></tr>
+      <tr><td>A-201</td><td>North & South Elevations</td><td>1:50</td><td>Exterior elevations showing roof + Dab windows</td></tr>
+      <tr><td>A-202</td><td>East & West Elevations</td><td>1:50</td><td>Gable ends, Pinjarakari screens</td></tr>
+      <tr><td>A-301</td><td>Sections A-A & B-B</td><td>1:50</td><td>Longitudinal + transverse sections through house</td></tr>
+      <tr><td>A-401</td><td>Roof Plan & Details</td><td>1:50 / 1:10</td><td>Roof plan + ridge detail + eave detail</td></tr>
+      <tr><td>A-501</td><td>Door & Window Schedule</td><td>—</td><td>Full schedules + typical details</td></tr>
+      <tr><td>A-502</td><td>Room Finish Schedule</td><td>—</td><td>Floor, wall, ceiling finishes per room</td></tr>
+      <tr><td>A-601</td><td>3D Views & Renders</td><td>NTS</td><td>Lumion exterior + interior renders</td></tr>
+    </tbody>
+  </table>
+
+  <!-- CHAPTER 15 -->
+  <div class="chapter-tag" style="margin-top:7mm">Chapter 15</div>
+  <div class="chapter-title">Room & Finish Schedule</div>
+  <div class="chapter-subtitle">Complete Room-by-Room Specifications</div>
+
+  <table>
+    <thead><tr><th>Room</th><th>Floor</th><th>Area (m²)</th><th>Floor Finish</th><th>Wall Finish</th><th>Ceiling</th></tr></thead>
+    <tbody>
+      <tr><td>Entrance Hall</td><td>GF</td><td>4.5</td><td>Kota Stone</td><td>Lime plaster, painted</td><td>Plain plaster</td></tr>
+      <tr><td>Living Room</td><td>GF</td><td>18.0</td><td>Kota Stone polished</td><td>Lime plaster + dado paneling</td><td>Khatamband (deodar)</td></tr>
+      <tr><td>Dining Room</td><td>GF</td><td>12.0</td><td>Kota Stone polished</td><td>Lime plaster painted</td><td>Khatamband (walnut)</td></tr>
+      <tr><td>Kitchen</td><td>GF</td><td>10.5</td><td>Anti-skid ceramic tile</td><td>Ceramic tile dado 1800 mm</td><td>Plain plaster</td></tr>
+      <tr><td>Guest Room</td><td>GF</td><td>10.0</td><td>Wooden flooring (deodar)</td><td>Lime plaster + wallpaper</td><td>Plain plaster</td></tr>
+      <tr><td>Bathroom GF</td><td>GF</td><td>4.5</td><td>Anti-skid tile (300×300)</td><td>Full-height ceramic tile</td><td>PVC false ceiling</td></tr>
+      <tr><td>Staircase</td><td>GF-FF</td><td>6.0</td><td>Kota Stone on steps</td><td>Lime plaster</td><td>Open to above</td></tr>
+      <tr><td>Master Bedroom</td><td>FF</td><td>18.0</td><td>Wooden flooring (walnut)</td><td>Lime plaster + wood panel dado</td><td>Khatamband (walnut)</td></tr>
+      <tr><td>Bedroom 2</td><td>FF</td><td>12.0</td><td>Wooden flooring (deodar)</td><td>Lime plaster painted</td><td>Khatamband (fir)</td></tr>
+      <tr><td>Bathroom FF</td><td>FF</td><td>4.5</td><td>Marble / Ceramic</td><td>Full-height marble / tile</td><td>PVC false ceiling</td></tr>
+      <tr><td>Zoon Dub (Balcony)</td><td>FF</td><td>4.3</td><td>Anti-skid stone</td><td>Pinjarakari lattice</td><td>Projected roof soffit</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans</span>
+    <span>Page 14</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ APPENDIX ══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="channel">Kashmir House Plans — Revit Tutorial</span>
+    <span>Appendix · Glossary & Resources</span>
+  </div>
+
+  <div class="chapter-tag">Appendix</div>
+  <div class="chapter-title">Kashmiri Architectural<br>Glossary & Resources</div>
+  <div class="chapter-subtitle">Reference Guide for Modeling Traditional Elements in Revit</div>
+
+  <h3>A.1 Kashmiri Architectural Glossary</h3>
+
+  <p><span class="glossary-term">Taq (تاق)</span></p>
+  <div class="glossary-def">Traditional load-bearing masonry construction system using stone piers (taq = "arch" or "opening") connected by horizontal deodar timber bands at each floor level. The openings between piers become windows and doors.</div>
+
+  <p><span class="glossary-term">Dhajji Dewari (ڈھاجی دیواری)</span></p>
+  <div class="glossary-def">Braced timber frame construction with brick or stone masonry infill panels. The timber grid creates a "patchwork quilt" pattern on the exterior wall. Highly earthquake-resistant — outperformed modern construction in the 2005 Kashmir earthquake.</div>
+
+  <p><span class="glossary-term">Zoon Dub (زون دب)</span></p>
+  <div class="glossary-def">Literally "Moon Platform" — a cantilevered balcony projecting from the first floor, used traditionally for moon-gazing and social interaction. Characteristically enclosed with wooden lattice (Pinjarakari) screens. The most iconic element of Srinagar's traditional residential architecture.</div>
+
+  <p><span class="glossary-term">Khatamband (خاتم بند)</span></p>
+  <div class="glossary-def">Art of creating ceilings using interlocking small pieces of deodar, walnut, or fir wood in geometric patterns. Introduced in Kashmir in 1541 by Mirza Hyder Doulat. No nails, no glue — pure joinery. Patterns include Muraba, Kansut, Badam, Sarva, Bod, Lakut, Sakhur, Tobul.</div>
+
+  <p><span class="glossary-term">Pinjarakari (پنجرکاری)</span></p>
+  <div class="glossary-def">Intricately carved wooden lattice fretwork used as screens on balconies, windows, and facades. Both functional (privacy, ventilation) and decorative. Often features Islamic geometric patterns or floral Mughal motifs.</div>
+
+  <p><span class="glossary-term">Dab / Kandhak</span></p>
+  <div class="glossary-def">Traditional Kashmiri wooden lattice window screen inserted within window openings. The lattice filters light and provides privacy. Made from deodar or walnut in geometric patterns.</div>
+
+  <p><span class="glossary-term">Hamam (حمام)</span></p>
+  <div class="glossary-def">A traditional underfloor heating system where a sunken chamber beneath the floor is heated by burning wood or charcoal coals. The warm floor radiates heat upward. Found in traditional sitting rooms (Dewan Khana).</div>
+
+  <p><span class="glossary-term">Dewan Khana</span></p>
+  <div class="glossary-def">The principal reception room or formal sitting room in a traditional Kashmiri home, typically featuring Khatamband ceiling, Pinjarakari screens, Hamam floor heating, and the most elaborate woodwork in the house.</div>
+
+  <h3>A.2 Tutorial Video Resources — Kashmir House Plans Channel</h3>
+  <table>
+    <thead><tr><th>Tutorial</th><th>YouTube URL</th></tr></thead>
+    <tbody>
+      <tr><td>Revit Speed Build — 1100 sqft Kashmiri House</td><td>youtube.com/watch?v=19pFzWjtKAk</td></tr>
+      <tr><td>Complex Roof Tutorial in Revit</td><td>youtube.com/watch?v=C46a2PoZJfM</td></tr>
+      <tr><td>Complex Kashmiri Roof Design</td><td>youtube.com/watch?v=hkwhRIQwTLM</td></tr>
+      <tr><td>Simple Window in Revit (Beginners)</td><td>youtube.com/watch?v=kiPYd5fwwUo</td></tr>
+      <tr><td>Residential House Design in Revit</td><td>youtube.com/watch?v=zR4iRSFBheE</td></tr>
+      <tr><td>Roof Fascia and Soffit in Revit</td><td>youtube.com/watch?v=F50qT2mwbms</td></tr>
+      <tr><td>Measure Roof Dimensions in Revit</td><td>youtube.com/watch?v=p0tu54z1WrE</td></tr>
+      <tr><td>Kashmiri House Rendering in Revit</td><td>youtube.com/watch?v=pCSlb0IESQM</td></tr>
+      <tr><td>Designing 35×35 House with Revit + Lumion</td><td>youtube.com/watch?v=a8c1zHtD-rc</td></tr>
+      <tr><td>House Plan 30×30 — 3D Walkthrough</td><td>youtube.com/watch?v=65NtDrRUwdY</td></tr>
+    </tbody>
+  </table>
+
+  <h3>A.3 Free Resources for Kashmiri House Modeling</h3>
+  <table>
+    <thead><tr><th>Resource</th><th>Type</th><th>URL</th></tr></thead>
+    <tbody>
+      <tr><td>3D Kashmir Style House DWG</td><td>AutoCAD DWG</td><td>cadbull.com/detail/3167/...</td></tr>
+      <tr><td>Revit House Families</td><td>Revit RVT/RFA</td><td>libraryrevit.com/families/houses-3d</td></tr>
+      <tr><td>Free Revit Models</td><td>Revit RVT</td><td>grabcad.com (search: Kashmir house)</td></tr>
+      <tr><td>BIM Objects Library</td><td>Multi-format</td><td>bimobject.com</td></tr>
+      <tr><td>Khatamband Research</td><td>PDF / Article</td><td>scribd.com/document/90091588</td></tr>
+      <tr><td>Dhajji Dewari Technical PDF</td><td>PDF</td><td>scribd.com/document/862871779</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box" style="margin-top:6mm">
+    <span class="label">To Save This Tutorial as PDF</span>
+    Open this HTML file in any browser (Chrome recommended). Press <strong>Ctrl + P</strong> (Windows) or <strong>Cmd + P</strong> (Mac). Under Destination, select <em>Save as PDF</em>. Paper size: A4. Margins: None. Enable <em>Background graphics</em> for colors. Click Save.
+  </div>
+
+  <div class="page-footer">
+    <span>Kashmir House Plans · youtube.com/c/kashmirhouseplans · Tutorial by Civil AI Engineering App</span>
+    <span>Page 15</span>
+  </div>
+</div>
+
+</body>
+</html>
