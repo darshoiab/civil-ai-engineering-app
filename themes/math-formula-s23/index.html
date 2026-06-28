@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Math Formula Theme · S23 Ultra</title>
+<style>
+  :root { --w: 1440; --h: 3088; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: #0a0c12; color: #e8edf2;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 24px 16px;
+  }
+  h1 { font-size: 20px; margin: 6px 0 0; font-weight: 600; letter-spacing: .3px; }
+  p.sub { margin: 0; color: #8b97a6; font-size: 13px; }
+  .panel { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 760px; }
+  button {
+    background: #161b26; color: #dfe6ee; border: 1px solid #28303f; border-radius: 10px;
+    padding: 10px 14px; font-size: 13px; cursor: pointer; transition: .15s;
+  }
+  button:hover { border-color: #1fe0f0; color: #fff; }
+  button.swatch { width: 40px; height: 40px; padding: 0; border-radius: 50%; }
+  button.swatch.active { outline: 2px solid #fff; outline-offset: 2px; }
+  .actions button { background: #1fe0f0; color: #04222a; border: none; font-weight: 600; }
+  .actions button:hover { filter: brightness(1.08); }
+  .stage {
+    width: min(360px, 86vw); aspect-ratio: var(--w) / var(--h);
+    border-radius: 26px; overflow: hidden; box-shadow: 0 18px 60px rgba(0,0,0,.6);
+    border: 1px solid #20242e;
+  }
+  .stage svg { width: 100%; height: 100%; display: block; }
+  code { background:#11151d; padding:2px 6px; border-radius:6px; color:#9fe9f2; }
+</style>
+</head>
+<body>
+  <h1>Math Formula Theme — Galaxy S23 Ultra</h1>
+  <p class="sub">Native 1440 × 3088 · AMOLED-friendly · pick a palette, then export a PNG</p>
+
+  <div class="panel" id="palette"></div>
+  <div class="panel actions">
+    <button id="png">⬇ Download PNG (1440×3088)</button>
+    <button id="svg">⬇ Download SVG</button>
+  </div>
+
+  <div class="stage" id="stage"></div>
+
+  <p class="sub">On your phone: open the PNG → share/save → <b>Set as wallpaper</b> → Home &amp; Lock.</p>
+
+<script>
+const W = 1440, H = 3088;
+
+// Palette presets: [accent, soft-accent, faint-field]
+const PALETTES = {
+  "AMOLED Cyan":  { a:"#1fe0f0", b:"#9fe9f2", f:"#5fd6e6", hero:"#eafcff" },
+  "Amber":        { a:"#ffb347", b:"#ffd79a", f:"#caa86a", hero:"#fff4e2" },
+  "Magenta":      { a:"#ff5fa2", b:"#ffaecf", f:"#d77ba6", hero:"#ffe9f3" },
+  "Emerald":      { a:"#3ee08f", b:"#a7f0c8", f:"#6fc79a", hero:"#e8fff2" },
+  "Mono White":   { a:"#dfe7ee", b:"#aeb8c2", f:"#7e8794", hero:"#ffffff" },
+};
+let current = "AMOLED Cyan";
+
+// faint background formula field
+const FIELD = [
+  [120,980,58,"∮ E·dl = −dΦ/dt"],[860,1090,52,"ζ(s) = Σ 1/nˢ"],
+  [90,1230,64,"∂u/∂t = α ∇²u"],[110,720,50,"det(A − λI) = 0"],
+  [120,2160,56,"cos²θ + sin²θ = 1"],[820,820,60,"f(x) = Σ aₙxⁿ"],
+  [110,1760,54,"∇·B = 0"],[700,900,58,"lim (1+1/n)ⁿ = e"],
+  [130,2020,62,"Γ(n) = (n−1)!"],[800,2140,50,"x = (−b ± √(b²−4ac)) / 2a"],
+  [120,2290,56,"P(A|B) = P(B|A)P(A)/P(B)"],[840,2400,54,"i ℏ ∂ψ/∂t = Ĥψ"],
+  [100,2560,60,"∫ f dμ"],[720,2660,52,"∇ × B = μ₀J + μ₀ε₀ ∂E/∂t"],
+  [160,2820,58,"a² + b² = c²"],[800,2930,54,"φ = (1+√5)/2"],
+];
+
+function buildSVG(p) {
+  const serif = "'Cambria Math','Latin Modern Math','Times New Roman',serif";
+  const field = FIELD.map(([x,y,s,t]) =>
+    `<text x="${x}" y="${y}" font-size="${s}">${t}</text>`).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#070b16"/><stop offset="55%" stop-color="#04060d"/>
+    <stop offset="100%" stop-color="#010206"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="50%" cy="34%" r="62%">
+    <stop offset="0%" stop-color="${p.a}" stop-opacity="0.16"/>
+    <stop offset="45%" stop-color="${p.a}" stop-opacity="0.05"/>
+    <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter>
+</defs>
+<rect width="${W}" height="${H}" fill="url(#bg)"/>
+<rect width="${W}" height="${H}" fill="url(#glow)"/>
+<g font-family="${serif}" font-style="italic" fill="${p.f}" opacity="0.10">${field}</g>
+<g font-family="${serif}" font-style="italic" text-anchor="middle">
+  <g filter="url(#soft)" fill="${p.a}" opacity="0.5"><text x="720" y="1340" font-size="150">e<tspan font-size="92" dy="-46">iπ</tspan><tspan dy="46"> + 1 = 0</tspan></text></g>
+  <text x="720" y="1340" font-size="150" fill="${p.hero}">e<tspan font-size="92" dy="-46">iπ</tspan><tspan dy="46"> + 1 = 0</tspan></text>
+  <text x="720" y="1640" font-size="86" fill="${p.b}" opacity="0.92">∫<tspan font-size="44" dy="40">−∞</tspan><tspan font-size="44" dy="-80">∞</tspan><tspan font-size="86" dy="40"> e<tspan font-size="52" dy="-26">−x²</tspan><tspan dy="26"> dx = √π</tspan></tspan></text>
+  <text x="720" y="1880" font-size="78" fill="${p.b}" opacity="0.85">Σ 1/n² = π²/6</text>
+</g>
+<rect x="36" y="36" width="${W-72}" height="${H-72}" rx="44" fill="none" stroke="${p.a}" stroke-opacity="0.08" stroke-width="2"/>
+</svg>`;
+}
+
+function render() {
+  const p = PALETTES[current];
+  document.getElementById("stage").innerHTML = buildSVG(p);
+}
+
+// palette swatches
+const pal = document.getElementById("palette");
+Object.entries(PALETTES).forEach(([name, p]) => {
+  const b = document.createElement("button");
+  b.className = "swatch" + (name === current ? " active" : "");
+  b.style.background = p.a; b.title = name;
+  b.onclick = () => {
+    current = name; render();
+    [...pal.children].forEach(c => c.classList.remove("active"));
+    b.classList.add("active");
+  };
+  pal.appendChild(b);
+});
+render();
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+document.getElementById("svg").onclick = () => {
+  const svg = buildSVG(PALETTES[current]);
+  downloadBlob(new Blob([svg], {type:"image/svg+xml"}), `math-s23-${current.replace(/\s+/g,'-').toLowerCase()}.svg`);
+};
+
+document.getElementById("png").onclick = () => {
+  const svg = buildSVG(PALETTES[current]);
+  const img = new Image();
+  const blobUrl = URL.createObjectURL(new Blob([svg], {type:"image/svg+xml"}));
+  img.onload = () => {
+    const c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    const ctx = c.getContext("2d");
+    ctx.drawImage(img, 0, 0, W, H);
+    URL.revokeObjectURL(blobUrl);
+    c.toBlob(b => downloadBlob(b, `math-s23-${current.replace(/\s+/g,'-').toLowerCase()}.png`), "image/png");
+  };
+  img.src = blobUrl;
+};
+</script>
+</body>
+</html>
